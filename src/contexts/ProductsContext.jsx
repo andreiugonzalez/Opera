@@ -10,8 +10,12 @@ export const useProducts = () => {
   return context;
 };
 
-// URL base de la API
-const API_BASE_URL = 'http://localhost:3001/api';
+// URL base de la API (configurable por entorno)
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  (typeof window !== 'undefined' && window.location.hostname === 'localhost'
+    ? 'http://localhost:3001/api'
+    : '/api');
 
 export const ProductsProvider = ({ children }) => {
   const [products, setProducts] = useState([]);

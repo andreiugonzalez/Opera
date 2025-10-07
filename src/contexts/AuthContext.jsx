@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }) => {
         const savedUser = JSON.parse(savedUserRaw);
         // Si es admin y hay token, verificar contra backend
         if (savedUser?.type === USER_TYPES.ADMIN && savedToken) {
-          const resp = await fetch('http://localhost:3001/api/auth/verify', {
+          const resp = await fetch(`${API_BASE_URL}/auth/verify`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -70,7 +70,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (userType, credentials = {}) => {
     if (userType === USER_TYPES.ADMIN) {
       try {
-        const response = await fetch('http://localhost:3001/api/auth/login', {
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -123,7 +123,7 @@ export const AuthProvider = ({ children }) => {
   // Función de logout
   const logout = () => {
     // Llamar a backend para limpiar cookie y luego limpiar estado local
-    fetch('http://localhost:3001/api/auth/logout', {
+    fetch(`${API_BASE_URL}/auth/logout`, {
       method: 'POST',
       credentials: 'include'
     }).finally(() => {
@@ -171,3 +171,8 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+  const API_BASE_URL =
+    import.meta.env.VITE_API_BASE_URL ||
+    (typeof window !== 'undefined' && window.location.hostname === 'localhost'
+      ? 'http://localhost:3001/api'
+      : '/api');
