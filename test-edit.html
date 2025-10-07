@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Edición Productos</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        button { padding: 10px 20px; margin: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 5px; }
+        .error { background: #f8d7da; color: #721c24; }
+        .success { background: #d4edda; color: #155724; }
+    </style>
+</head>
+<body>
+    <h1>Test de Edición de Productos</h1>
+    
+    <button onclick="testEditProduct()">Probar Edición de Producto</button>
+    <button onclick="getProducts()">Obtener Lista de Productos</button>
+    
+    <div id="results"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:3001/api';
+        
+        function addResult(message, type = 'result') {
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            document.getElementById('results').appendChild(div);
+        }
+        
+        async function getProducts() {
+            try {
+                addResult('Obteniendo lista de productos...');
+                const response = await fetch(`${API_BASE}/products`);
+                const data = await response.json();
+                const products = data.data || data;
+                
+                addResult(`✅ ${products.length} productos encontrados:`, 'success');
+                products.forEach(p => {
+                    addResult(`- ${p.name} (ID: ${p.id}) - Precio: $${p.price}`);
+                });
+            } catch (error) {
+                addResult(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testEditProduct() {
+            try {
+                // Primero obtener un producto
+                addResult('Obteniendo producto para editar...');
+                const getResponse = await fetch(`${API_BASE}/products`);
+                const data = await getResponse.json();
+                const products = data.data || data;
+                
+                if (products.length === 0) {
+                    addResult('❌ No hay productos para editar', 'error');
+                    return;
+                }
+                
+                const product = products[0];
+                addResult(`Editando producto: ${product.name} (ID: ${product.id})`);
+                
+                // Datos para editar
+                const editData = {
+                    name: product.name + ' - EDITADO DESDE NAVEGADOR',
+                    description: (product.description || 'Sin descripción') + ' - Actualizado',
+                    price: parseFloat(product.price) + 1,
+                    category_id: product.category_id,
+                    image_url: product.image_url,
+                    stock_quantity: product.stock_quantity || 0
+                };
+                
+                addResult(`Enviando datos: ${JSON.stringify(editData, null, 2)}`);
+                
+                // Hacer la edición
+                const editResponse = await fetch(`${API_BASE}/products/${product.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(editData)
+                });
+                
+                addResult(`Status de respuesta: ${editResponse.status}`);
+                
+                if (!editResponse.ok) {
+                    const errorText = await editResponse.text();
+                    addResult(`❌ Error en respuesta: ${errorText}`, 'error');
+                    return;
+                }
+                
+                const result = await editResponse.json();
+                addResult(`✅ Producto editado exitosamente!`, 'success');
+                addResult(`Resultado: ${JSON.stringify(result, null, 2)}`);
+                
+                // Verificar que se actualizó
+                setTimeout(async () => {
+                    const verifyResponse = await fetch(`${API_BASE}/products`);
+                    const verifyData = await verifyResponse.json();
+                    const updatedProducts = verifyData.data || verifyData;
+                    const updatedProduct = updatedProducts.find(p => p.id === product.id);
+                    
+                    if (updatedProduct && updatedProduct.name.includes('EDITADO DESDE NAVEGADOR')) {
+                        addResult(`✅ Verificación exitosa: El producto se actualizó correctamente`, 'success');
+                    } else {
+                        addResult(`❌ Error: El producto no se actualizó en la lista`, 'error');
+                    }
+                }, 1000);
+                
+            } catch (error) {
+                addResult(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Cargar productos al inicio
+        window.onload = () => {
+            getProducts();
+        };
+    </script>
+</body>
+</html>
