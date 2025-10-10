@@ -1,4 +1,14 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+// NOTA IMPORTANTE (deploy/Vercel):
+// - La variable `API_BASE_URL` se toma de `import.meta.env.VITE_API_BASE_URL`.
+//   Si no está definida, en localhost usa `http://localhost:3001/api`,
+//   y en producción (sin variable) usa `/api` (proxy/rewrite en hosting).
+// - "Failed to fetch" suele venir por:
+//   1) El backend no está levantado o URL incorrecta.
+//   2) CORS: `FRONTEND_URL` en backend debe coincidir con el origen real.
+//   3) HTTPS con cookies: en producción, `secure:true` + `sameSite:'none'` requiere HTTPS.
+//   4) Variables de entorno faltantes en Vercel (VITE_API_BASE_URL, etc.).
+// Ajusta `VITE_API_BASE_URL` para apuntar a tu backend (Railway/Vercel) cuando despliegues.
 
 const AuthContext = createContext();
 
@@ -37,7 +47,8 @@ export const AuthProvider = ({ children }) => {
           const resp = await fetch(`${API_BASE_URL}/auth/verify`, {
             method: 'POST',
             headers: {
-              'Content-Type': 'application/json'
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${savedToken}`
             },
             credentials: 'include'
           });
@@ -70,6 +81,8 @@ export const AuthProvider = ({ children }) => {
   const login = async (userType, credentials = {}) => {
     if (userType === USER_TYPES.ADMIN) {
       try {
+        // Asegúrate de que API_BASE_URL apunte al backend correcto.
+        // En Vercel/producción: define VITE_API_BASE_URL = 'https://tu-backend/api'
         const response = await fetch(`${API_BASE_URL}/auth/login`, {
           method: 'POST',
           headers: {
@@ -172,7 +185,9 @@ export const AuthProvider = ({ children }) => {
   );
 };
   const API_BASE_URL =
-    import.meta.env.VITE_API_BASE_URL ||
-    (typeof window !== 'undefined' && window.location.hostname === 'localhost'
-      ? 'http://localhost:3001/api'
-      : '/api');
+    import.meta.env.VITE_API_BASE_URL || '/api';
+// Si despliegas frontend en Vercel y backend en Railway:
+// - Configura VITE_API_BASE_URL en Vercel (Settings -> Environment Variables)
+//   ejemplo: VITE_API_BASE_URL = https://<railway-app>.up.railway.app/api
+// - En backend .env: FRONTEND_URL debe ser el dominio del frontend, p.ej. https://<tu-vercel>.vercel.app
+// - Sin estas variables correctas, el navegador puede bloquear la solicitud (CORS) y mostrar "Failed to fetch".

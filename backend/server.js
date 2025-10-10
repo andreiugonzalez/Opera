@@ -16,10 +16,32 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middlewares
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  credentials: true
-}));
+// CORS dinámico: permite credenciales y valida origen contra lista permitida
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:5173'
+].filter(Boolean);
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Permitir peticiones sin origen (Postman, curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error(`Origen no permitido por CORS: ${origin}`));
+  },
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+// Responder preflight para cualquier ruta
+app.options('*', cors(corsOptions));
+// Nota de despliegue:
+// - FRONTEND_URL debe ser EXACTAMENTE el origen del frontend en producción,
+//   por ejemplo: https://tu-frontend.vercel.app
+// - Si no coincide, el navegador bloqueará la petición (CORS) y en el frontend
+//   verás "Failed to fetch".
+// - Verifica también que uses `credentials: true` aquí y `credentials: 'include'`
+//   en el fetch del frontend si trabajas con cookies de sesión/JWT.
 
 // Parseo de cookies
 app.use(cookieParser());
@@ -103,10 +125,12 @@ async function startServer() {
     }
 
     app.listen(PORT, () => {
-      console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
-      console.log(`📊 API disponible en http://localhost:${PORT}/api`);
-      console.log(`🔧 Frontend URL configurado: ${process.env.FRONTEND_URL}`);
-    });
+  console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+  console.log(`📊 API disponible en http://localhost:${PORT}/api`);
+  console.log(`🔧 Frontend URL configurado: ${process.env.FRONTEND_URL}`);
+});
+// Si despliegas en Vercel serverless, las rutas deben exportarse como funciones.
+// Este servidor Express está pensado para Railway/Render/local.
   } catch (error) {
     console.error('❌ Error al iniciar el servidor:', error);
     process.exit(1);

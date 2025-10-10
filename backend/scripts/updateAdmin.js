@@ -6,7 +6,7 @@ async function updateAdminCredentials() {
     console.log('🔐 Actualizando credenciales del administrador...');
     
     // Hashear la nueva contraseña
-    const password = 'opera2025';
+    const password = 'Oper42025$';
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
     
@@ -22,7 +22,7 @@ async function updateAdminCredentials() {
     if (result.affectedRows > 0) {
       console.log('✅ Credenciales del administrador actualizadas correctamente');
       console.log('   Usuario: OperaAdmin');
-      console.log('   Contraseña: opera2025');
+      console.log('   Contraseña: Oper42025$');
     } else {
       console.log('❌ No se encontró usuario administrador para actualizar');
     }

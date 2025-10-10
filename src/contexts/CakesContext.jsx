@@ -9,10 +9,7 @@ export const useCakes = () => {
 };
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  (typeof window !== 'undefined' && window.location.hostname === 'localhost'
-    ? 'http://localhost:3001/api'
-    : '/api');
+  import.meta.env.VITE_API_BASE_URL || '/api';
 
 export const CakesProvider = ({ children }) => {
   const [cakes, setCakes] = useState([]);
@@ -36,6 +33,7 @@ export const CakesProvider = ({ children }) => {
 
   const editCake = async (id, { name, image_url, is_active, price, imageFile }) => {
     let resp;
+    const token = localStorage.getItem('opera_token');
     if (imageFile) {
       const form = new FormData();
       if (name !== undefined) form.append('name', name);
@@ -45,13 +43,16 @@ export const CakesProvider = ({ children }) => {
       if (image_url) form.append('image_url', image_url);
       resp = await fetch(`${API_BASE_URL}/cakes/${id}`, {
         method: 'PUT',
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         credentials: 'include',
         body: form
       });
     } else {
       resp = await fetch(`${API_BASE_URL}/cakes/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(token ? { 'Authorization': `Bearer ${token}` } : {}) },
         credentials: 'include',
         body: JSON.stringify({ name, image_url, is_active, price })
       });
@@ -65,6 +66,7 @@ export const CakesProvider = ({ children }) => {
 
   const addCake = async ({ name, image_url, price, imageFile }) => {
     let resp;
+    const token = localStorage.getItem('opera_token');
     if (imageFile) {
       const form = new FormData();
       form.append('name', name);
@@ -73,13 +75,16 @@ export const CakesProvider = ({ children }) => {
       if (image_url) form.append('image_url', image_url);
       resp = await fetch(`${API_BASE_URL}/cakes`, {
         method: 'POST',
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         credentials: 'include',
         body: form
       });
     } else {
       resp = await fetch(`${API_BASE_URL}/cakes`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(token ? { 'Authorization': `Bearer ${token}` } : {}) },
         credentials: 'include',
         body: JSON.stringify({ name, image_url, price })
       });
@@ -91,8 +96,12 @@ export const CakesProvider = ({ children }) => {
   };
 
   const deleteCake = async (id) => {
+    const token = localStorage.getItem('opera_token');
     const resp = await fetch(`${API_BASE_URL}/cakes/${id}`, {
       method: 'DELETE',
+      headers: {
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
       credentials: 'include'
     });
     const data = await resp.json();

@@ -26,6 +26,11 @@ const dbConfig = process.env.NODE_ENV === 'production' ? {
   connectionLimit: 10,
   queueLimit: 0
 };
+// Nota de despliegue:
+// - En producción, TODAS las variables RAILWAY_MYSQL_* deben estar definidas.
+// - Si falta alguna, `mysql2` fallará y el backend responderá 500,
+//   which el frontend verá como "Failed to fetch".
+// - Verifica también `JWT_SECRET` y `FRONTEND_URL`.
 
 // Crear el pool de conexiones
 const pool = mysql.createPool(dbConfig);
@@ -39,6 +44,9 @@ async function testConnection() {
     return true;
   } catch (error) {
     console.error('❌ Error al conectar con MySQL:', error.message);
+    // Sugerencias:
+    // - Revisa credenciales y accesos de red (Railway -> Networking -> Allow external connections).
+    // - En entornos serverless, habilita `ssl` si el proveedor lo requiere.
     return false;
   }
 }

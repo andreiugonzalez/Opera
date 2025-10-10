@@ -12,10 +12,7 @@ export const useProducts = () => {
 
 // URL base de la API (configurable por entorno)
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  (typeof window !== 'undefined' && window.location.hostname === 'localhost'
-    ? 'http://localhost:3001/api'
-    : '/api');
+  import.meta.env.VITE_API_BASE_URL || '/api';
 
 export const ProductsProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
@@ -73,10 +70,12 @@ export const ProductsProvider = ({ children }) => {
   // Agregar producto
   const addProduct = async (productData) => {
     try {
+      const token = localStorage.getItem('opera_token');
       const response = await fetch(`${API_BASE_URL}/products`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
         credentials: 'include',
         body: JSON.stringify(productData),
@@ -101,11 +100,13 @@ export const ProductsProvider = ({ children }) => {
   const editProduct = async (id, productData) => {
     try {
       console.log('🔄 Editando producto:', { id, productData });
+      const token = localStorage.getItem('opera_token');
       
       const response = await fetch(`${API_BASE_URL}/products/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
         credentials: 'include',
         body: JSON.stringify(productData),
@@ -145,8 +146,12 @@ export const ProductsProvider = ({ children }) => {
   const deleteProduct = async (id) => {
     try {
       // Primero hacer la petición al servidor
+      const token = localStorage.getItem('opera_token');
       const response = await fetch(`${API_BASE_URL}/products/${id}`, {
         method: 'DELETE',
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         credentials: 'include'
       });
       
@@ -180,10 +185,12 @@ export const ProductsProvider = ({ children }) => {
   // Agregar categoría
   const addCategory = async (categoryData) => {
     try {
+      const token = localStorage.getItem('opera_token');
       const response = await fetch(`${API_BASE_URL}/products/categories`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
         credentials: 'include',
         body: JSON.stringify(categoryData),
@@ -212,8 +219,12 @@ export const ProductsProvider = ({ children }) => {
     try {
       const url = `${API_BASE_URL}/products/categories/${categoryId}`;
       console.log('🔍 URL completa:', url);
+      const token = localStorage.getItem('opera_token');
       const response = await fetch(url, {
         method: 'DELETE',
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         credentials: 'include'
       });
 

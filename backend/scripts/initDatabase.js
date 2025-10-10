@@ -28,10 +28,18 @@ async function initializeDatabase() {
       multipleStatements: true
     };
 
-    // Conectar a MySQL
+    // Conectar a MySQL (sin seleccionar base inicialmente)
     connection = await mysql.createConnection(dbConfig);
 
     console.log('🔌 Conectado a MySQL');
+
+    // Crear y seleccionar la base de datos en desarrollo
+    if (process.env.NODE_ENV !== 'production') {
+      const dbName = process.env.DB_NAME || 'opera_panaderia';
+      await connection.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
+      await connection.query(`USE \`${dbName}\``);
+      console.log(`🏗️  Base de datos seleccionada: ${dbName}`);
+    }
 
     // Leer el archivo SQL
     const sqlPath = path.join(__dirname, '../database/init.sql');

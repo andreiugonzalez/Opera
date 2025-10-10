@@ -564,8 +564,8 @@ export default function PaginaPedido() {
               {cakesError && (
                 <p className="text-red-600 mb-2">{cakesError}</p>
               )}
-              <div className="overflow-x-hidden">
-                <table className="min-w-full divide-y divide-amber-200">
+              <div className="overflow-x-auto sm:overflow-x-visible">
+                <table className="min-w-[640px] sm:min-w-full divide-y divide-amber-200">
                   <thead className="bg-amber-50">
                     <tr>
                       <th className="px-4 py-2 text-left text-sm font-semibold text-amber-900">Foto</th>

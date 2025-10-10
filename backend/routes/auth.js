@@ -59,6 +59,11 @@ router.post('/login', async (req, res) => {
       maxAge: 24 * 60 * 60 * 1000,
       path: '/',
     });
+    // Importante:
+    // - En producción (Vercel/Railway), `secure: true` y `sameSite: 'none'` requieren HTTPS de ambos lados.
+    // - Si el frontend no está en HTTPS o el dominio/origen no coincide con FRONTEND_URL,
+    //   el navegador puede bloquear la cookie y la solicitud, mostrando "Failed to fetch".
+    // - Asegúrate de enviar `credentials: 'include'` desde el frontend y `credentials: true` en CORS.
 
     res.json({
       success: true,
@@ -75,6 +80,11 @@ router.post('/login', async (req, res) => {
     });
   } catch (error) {
     console.error('Error en login:', error);
+    // Si ves "Failed to fetch" en el frontend, revisa:
+    // 1) URL base de la API correcta.
+    // 2) FRONTEND_URL en backend coincide con el origen del frontend.
+    // 3) HTTPS habilitado cuando `secure: true`.
+    // 4) Variables de entorno (JWT_SECRET, DB creds) presentes en producción.
     res.status(500).json({
       success: false,
       error: 'Error en el servidor',
