@@ -314,37 +314,34 @@ export default function PaginaBienvenida({ onContinue }) {
           </button>
         </section>
 
-        {/* Sección Ubicación y Contacto con imagen izquierda e info derecha con padding para separación */}
+        {/* Sección Ubicación y Contacto en grid: móvil Ubicación → Foto → Contacto */}
         <section
           ref={secciones.ubicacion}
-          className={`w-full py-16 sm:py-20 md:py-24 flex flex-col md:flex-row items-center justify-center px-4 sm:px-8 md:px-12 bg-white text-neutral-900 shadow-inner rounded-lg transition-all duration-1000 ${seccionesVisibles.ubicacion ? 'opacity-100' : 'opacity-0'}`}
+          className={`w-full py-16 sm:py-20 md:py-24 grid grid-cols-1 md:grid-cols-2 md:auto-rows-min gap-6 md:gap-x-12 md:gap-y-8 items-start justify-center px-4 sm:px-8 md:px-12 bg-white text-neutral-900 shadow-inner rounded-lg transition-all duration-1000 ${seccionesVisibles.ubicacion ? 'opacity-100' : 'opacity-0'}`}
         >
-          {/* Imagen izquierda */}
-          <div className={`w-full md:w-1/2 order-2 md:order-1 max-w-full rounded-lg shadow-lg overflow-hidden transition-all duration-1000 transform hover:scale-105 mb-8 md:mb-0 ${seccionesVisibles.ubicacion ? 'translate-x-0 opacity-100' : 'translate-x-[-50px] opacity-0'}`}>
-            <img
-              src="/imagenes/lugar.jpg"
-              alt="Ubicación"
-              className="w-full h-auto max-w-full object-cover"
-            />
-          </div>
-
-          {/* Info derecha con padding */}
-          <div className={`w-full md:w-1/2 order-1 md:order-2 max-w-3xl font-serif text-center md:text-left px-4 sm:px-6 md:px-8 lg:px-16 transition-all duration-1000 transform ${seccionesVisibles.ubicacion ? 'translate-x-0 opacity-100' : 'translate-x-[50px] opacity-0'}`}>
-            <h2 className="text-3xl sm:text-3xl md:text-4xl font-extrabold mb-6 sm:mb-8 border-b-4 border-amber-400 inline-block pb-2 tracking-wide">
-              Ubicación y Contacto
+          {/* Información de Ubicación (columna derecha en desktop) */}
+          <div className={`w-full md:col-start-2 md:row-start-1 max-w-3xl font-serif text-center md:text-left px-4 sm:px-6 md:px-8 lg:px-16 md:flex md:flex-col md:justify-center md:self-center transition-all duration-1000 transform ${seccionesVisibles.ubicacion ? 'translate-x-0 opacity-100' : 'translate-x-[50px] opacity-0'}`}>
+            <h2 className="text-3xl sm:text-3xl md:text-4xl font-extrabold mb-2 border-b-4 border-amber-400 inline-block pb-2 tracking-wide">
+              Ubicación
             </h2>
+            <div className="mt-1 text-sm text-neutral-600">Encuéntranos y contáctanos fácilmente.</div>
             <div className="mb-8">
               <p className="text-lg mb-3">Nos encuentras en Viviana Chepillo 3130, La Serena.</p>
               <p className="text-lg mb-3">
                 Horario de atención: Lunes a viernes de 4:30 a 7:30 pm
               </p>
+
+
+           
+
+
               
               {/* Google Maps */}
-              <div className="mt-8 mb-6">
+              <div className="mt-10 mb-6">
                 <iframe
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3349.8234567890123!2d-71.2425471!3d-29.9430368!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9691cb7679eb8c8b%3A0xeb766d880899d083!2sOpera.%20Panaderia%20y%20Pasteler%C3%ADa!5e0!3m2!1ses!2scl!4v1642678901234!5m2!1ses!2scl"
                   width="100%"
-                  height="300"
+                  height="600"
                   style={{ border: 0 }}
                   allowFullScreen=""
                   loading="lazy"
@@ -352,43 +349,100 @@ export default function PaginaBienvenida({ onContinue }) {
                   className="rounded-lg shadow-lg"
                 ></iframe>
               </div>
-              
-              {/* Contactos */}
-              <div className="mt-4 flex justify-center md:justify-start gap-10 sm:gap-8 text-3xl sm:text-4xl text-amber-600 px-2 sm:px-2 md:px-20 lg:px-50">
-                <a
-                  href="https://wa.me/56986193142"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="WhatsApp"
-                  className="hover:text-green-600 transition-colors hover:scale-90 transform duration-300"
-                >
-                  📱
-                </a>
-                <a
-                  href="https://www.instagram.com/opera.pasteleria/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Instagram"
-                  className="hover:text-pink-500 transition-colors hover:scale-90 transform duration-300"
-                >
-                  📸
-                </a>
-                <a
-                  href="mailto:contacto@opera.com"
-                  aria-label="Correo Electrónico"
-                  className="hover:text-gray-600 transition-colors hover:scale-90 transform duration-300"
-                >
-                  ✉️
-                </a>
-              </div>
             </div>
           </div>
+          {/* Imagen (columna izquierda en desktop, segunda en móvil) */}
+          <div className={`w-full md:col-start-1 max-w-full rounded-lg shadow-lg overflow-hidden transition-all duration-1000 transform hover:scale-105 mb-8 md:mb-0 ${seccionesVisibles.ubicacion ? 'translate-x-0 opacity-100' : 'translate-x-[-50px] opacity-0'}`}>
+            <img
+              src="/imagenes/lugar.jpg"
+              alt="Ubicación"
+              className="w-full h-auto max-w-full object-cover"
+            />
+          </div>
+
+          {/* Contacto movido fuera de la grilla */}
         </section>
       </main>
 
 
 
       {/* Footer */}
+      {/* Contacto a ancho completo */}
+      <section className={`w-full py-16 sm:py-20 md:py-24 flex flex-col items-center justify-center bg-amber-50 px-4 sm:px-6 md:px-10 transition-all duration-700`}>
+        <div className={`max-w-4xl w-full text-center text-neutral-900 font-serif mx-auto`}>
+          <h2 className="text-3xl sm:text-4xl font-bold mb-6 border-b-4 border-amber-400 inline-block pb-2">
+            Contacto
+          </h2>
+          <p className="text-base sm:text-lg leading-relaxed max-w-3xl mx-auto mb-6">
+            Puedes contactarnos por WhatsApp, Instagram o correo electrónico.
+          </p>
+        </div>
+
+        {/* Contactos */}
+        <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-5 max-w-5xl w-full mx-auto">
+          {/* WhatsApp */}
+          <a
+            href="https://wa.me/56967561156"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="WhatsApp"
+            title="Contactar por WhatsApp"
+          className="group block rounded-xl border border-amber-200 bg-white p-5 shadow-sm hover:shadow-md hover:border-amber-400 transition-all duration-300"
+          >
+            <div className="flex items-center gap-4 justify-center sm:justify-start">
+              <div className="text-4xl leading-none text-amber-700 group-hover:text-green-600 transition-colors">📱</div>
+              <div className="text-center sm:text-left">
+                <div className="text-lg font-semibold text-amber-900">WhatsApp</div>
+                <div className="text-sm text-neutral-600">+56 9 6756 1156</div>
+              </div>
+            </div>
+          </a>
+
+          {/* Instagram */}
+          <a
+            href="https://www.instagram.com/opera.pasteleria/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Instagram"
+            title="Ver en Instagram"
+          className="group block rounded-xl border border-amber-200 bg-white p-5 shadow-sm hover:shadow-md hover:border-amber-400 transition-all duration-300"
+          >
+            <div className="flex items-center gap-4 justify-center sm:justify-start">
+              <div className="text-4xl leading-none text-amber-700 group-hover:text-pink-600 transition-colors">📸</div>
+              <div className="text-center sm:text-left">
+                <div className="text-lg font-semibold text-amber-900">Instagram</div>
+                <div className="text-sm text-neutral-600">@opera.pasteleria</div>
+              </div>
+            </div>
+          </a>
+
+          {/* Correo: no clickeable, con copia y animación sutil */}
+          <div
+            aria-label="Correo Electrónico"
+            title="Copiar correo"
+          className="group block rounded-xl border border-amber-200 bg-white p-5 shadow-sm hover:shadow-md hover:border-amber-400 transition-all duration-300"
+          >
+            <div className="flex items-center gap-4 justify-center sm:justify-start">
+              <div className="text-4xl leading-none text-amber-700 group-hover:text-neutral-700 transition-colors">✉️</div>
+              <div className="text-center sm:text-left">
+                <div className="text-lg font-semibold text-amber-900">Correo</div>
+                <div className="text-sm text-neutral-700 break-words select-all">constanza.zurita12@gmail.com</div>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText('constanza.zurita12@gmail.com');
+                    } catch {}
+                  }}
+                  className="mt-3 mx-auto sm:mx-0 inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg bg-amber-600 text-white hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-1 transition-transform duration-200 active:scale-[0.98]"
+                >
+                  <span>Copiar</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
       <footer className="bg-neutral-900 text-amber-400 py-4 sm:py-6 mt-8 sm:mt-12 text-center font-mono tracking-wide shadow-inner transition-all duration-700 backdrop-blur-sm">
         <p className="text-sm sm:text-base">© 2025 Pastelería y Panadería Opera. Todos los derechos reservados.</p>
         <p className="mt-1 sm:mt-2 text-xs sm:text-sm">Horneando sueños</p>
