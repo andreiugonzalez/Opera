@@ -33,6 +33,74 @@ router.get('/', async (req, res) => {
   }
 });
 
+// RUTAS DE CATEGORÍAS (deben ir antes de la ruta dinámica '/:id')
+// GET /api/products/categories/all - Obtener todas las categorías
+router.get('/categories/all', async (req, res) => {
+  try {
+    const categories = await Category.getAll();
+    
+    res.json({
+      success: true,
+      data: categories
+    });
+  } catch (error) {
+    console.error('Error al obtener categorías:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al obtener categorías',
+      message: error.message
+    });
+  }
+});
+
+// POST /api/products/categories - Crear nueva categoría
+router.post('/categories', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { name, description } = req.body;
+    
+    // Validaciones básicas
+    if (!name || !name.trim()) {
+      return res.status(400).json({
+        success: false,
+        error: 'El nombre de la categoría es requerido'
+      });
+    }
+    
+    // Verificar si ya existe una categoría con ese nombre
+    const categories = await Category.getAll();
+    const existingCategory = categories.find(cat => 
+      cat.name.toLowerCase() === name.trim().toLowerCase()
+    );
+    
+    if (existingCategory) {
+      return res.status(400).json({
+        success: false,
+        error: 'Ya existe una categoría con ese nombre'
+      });
+    }
+    
+    const categoryId = await Category.create({
+      name: name.trim(),
+      description: description?.trim() || ''
+    });
+    
+    const newCategory = await Category.getById(categoryId);
+    
+    res.status(201).json({
+      success: true,
+      data: newCategory,
+      message: 'Categoría creada exitosamente'
+    });
+  } catch (error) {
+    console.error('Error al crear categoría:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al crear categoría',
+      message: error.message
+    });
+  }
+});
+
 // GET /api/products/:id - Obtener producto por ID
 router.get('/:id', async (req, res) => {
   try {
@@ -220,72 +288,7 @@ router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
   }
 });
 
-// GET /api/products/categories/all - Obtener todas las categorías
-router.get('/categories/all', async (req, res) => {
-  try {
-    const categories = await Category.getAll();
-    
-    res.json({
-      success: true,
-      data: categories
-    });
-  } catch (error) {
-    console.error('Error al obtener categorías:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Error al obtener categorías',
-      message: error.message
-    });
-  }
-});
-
-// POST /api/products/categories - Crear nueva categoría
-router.post('/categories', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    const { name, description } = req.body;
-    
-    // Validaciones básicas
-    if (!name || !name.trim()) {
-      return res.status(400).json({
-        success: false,
-        error: 'El nombre de la categoría es requerido'
-      });
-    }
-    
-    // Verificar si ya existe una categoría con ese nombre
-    const categories = await Category.getAll();
-    const existingCategory = categories.find(cat => 
-      cat.name.toLowerCase() === name.trim().toLowerCase()
-    );
-    
-    if (existingCategory) {
-      return res.status(400).json({
-        success: false,
-        error: 'Ya existe una categoría con ese nombre'
-      });
-    }
-    
-    const categoryId = await Category.create({
-      name: name.trim(),
-      description: description?.trim() || ''
-    });
-    
-    const newCategory = await Category.getById(categoryId);
-    
-    res.status(201).json({
-      success: true,
-      data: newCategory,
-      message: 'Categoría creada exitosamente'
-    });
-  } catch (error) {
-    console.error('Error al crear categoría:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Error al crear categoría',
-      message: error.message
-    });
-  }
-});
+// (Rutas de categorías reubicadas arriba)
 
 // DELETE /api/products/categories/:id - Eliminar categoría
 router.delete('/categories/:id', authenticateToken, requireAdmin, async (req, res) => {
