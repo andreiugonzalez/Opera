@@ -44,7 +44,10 @@ export default function ProductModal({ isOpen, onClose, product = null, mode = '
     // Aplicar formateo automático para el campo precio
     let processedValue = value;
     if (name === 'precio') {
-      processedValue = sanitizePriceDigits(value);
+      processedValue = sanitizePriceDigits(value).slice(0, 15);
+    } else if (name === 'titulo') {
+      // Limitar el título a 35 caracteres
+      processedValue = value.slice(0, 35);
     }
     
     setFormData(prev => ({
@@ -83,13 +86,15 @@ export default function ProductModal({ isOpen, onClose, product = null, mode = '
 
     if (!formData.titulo.trim()) {
       newErrors.titulo = 'El título es requerido';
+    } else if (formData.titulo.trim().length > 35) {
+      newErrors.titulo = 'El título no puede superar 35 caracteres';
     }
 
     if (!formData.ingredientes.trim()) {
       newErrors.ingredientes = 'Los ingredientes son requeridos';
     }
 
-    const cleanPrice = parseChileanPrice(formData.precio);
+    const cleanPrice = parseChileanPrice(sanitizePriceDigits(formData.precio).slice(0, 15));
     if (!formData.precio || cleanPrice <= 0) {
       newErrors.precio = 'El precio debe ser un número mayor a 0';
     } else if (cleanPrice > 99999999) {
@@ -120,7 +125,7 @@ export default function ProductModal({ isOpen, onClose, product = null, mode = '
     const productData = {
       name: formData.titulo,
       description: formData.ingredientes,
-      price: parseChileanPrice(formData.precio),
+      price: parseChileanPrice(sanitizePriceDigits(formData.precio).slice(0, 15)),
       category_id: getCategoryId(formData.categoria),
       image_url: formData.imagen,
       stock_quantity: 0
@@ -142,25 +147,25 @@ export default function ProductModal({ isOpen, onClose, product = null, mode = '
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-[1000] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
+      <div className="bg-[#F8EDD6] rounded-2xl w-full max-w-[92vw] sm:w-[480px] md:w-[560px] h-[88vh] max-h-[88vh] overflow-y-auto shadow-2xl ring-1 ring-[#783719]/20">
         <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-amber-700">
+          <div className="flex justify-between items-center mb-6 pb-4 border-b border-[#783719]/20">
+            <h2 className="text-2xl font-semibold text-[#783719]">
               {mode === 'edit' ? 'Editar Producto' : 'Agregar Producto'}
             </h2>
             <button
               onClick={onClose}
-              className="text-gray-500 hover:text-gray-700 text-2xl"
+              className="text-[#783719]/70 hover:text-[#783719] text-2xl transition"
             >
               ×
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {/* Título */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-[#783719] mb-1">
                 Título *
               </label>
               <input
@@ -168,8 +173,9 @@ export default function ProductModal({ isOpen, onClose, product = null, mode = '
                 name="titulo"
                 value={formData.titulo}
                 onChange={handleInputChange}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 ${
-                  errors.titulo ? 'border-red-500' : 'border-gray-300'
+                maxLength={35}
+                className={`w-full px-3 py-2 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#EBC07A] bg-white/80 text-[#452216] shadow-sm ${
+                  errors.titulo ? 'border-red-500' : 'border-[#783719]/30'
                 }`}
                 placeholder="Nombre del producto"
               />
@@ -178,14 +184,14 @@ export default function ProductModal({ isOpen, onClose, product = null, mode = '
 
             {/* Categoría */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-[#783719] mb-1">
                 Categoría *
               </label>
               <select
                 name="categoria"
                 value={formData.categoria}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="w-full px-3 py-2 rounded-xl border border-[#783719]/30 bg-white/80 focus:outline-none focus:ring-2 focus:ring-[#EBC07A] text-[#452216] shadow-sm"
               >
                 {categories.filter(cat => cat.id !== 'todos').map(category => (
                   <option key={category.id} value={category.name}>{category.name}</option>
@@ -195,7 +201,7 @@ export default function ProductModal({ isOpen, onClose, product = null, mode = '
 
             {/* Ingredientes */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-[#783719] mb-1">
                 Ingredientes *
               </label>
               <textarea
@@ -203,8 +209,8 @@ export default function ProductModal({ isOpen, onClose, product = null, mode = '
                 value={formData.ingredientes}
                 onChange={handleInputChange}
                 rows={3}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 ${
-                  errors.ingredientes ? 'border-red-500' : 'border-gray-300'
+                className={`w-full px-3 py-2 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#EBC07A] bg-white/80 text-[#452216] shadow-sm resize-y ${
+                  errors.ingredientes ? 'border-red-500' : 'border-[#783719]/30'
                 }`}
                 placeholder="Lista de ingredientes separados por comas"
               />
@@ -213,7 +219,7 @@ export default function ProductModal({ isOpen, onClose, product = null, mode = '
 
             {/* Precio */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-[#783719] mb-1">
                 Precio (CLP) *
               </label>
               <input
@@ -222,10 +228,11 @@ export default function ProductModal({ isOpen, onClose, product = null, mode = '
                 name="precio"
                 value={formData.precio}
                 onChange={handleInputChange}
-                onBlur={(e) => setFormData(prev => ({ ...prev, precio: formatChileanPrice(sanitizePriceDigits(e.target.value)) }))}
-                onFocus={(e) => setFormData(prev => ({ ...prev, precio: sanitizePriceDigits(e.target.value) }))}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 ${
-                  errors.precio ? 'border-red-500' : 'border-gray-300'
+                onBlur={(e) => setFormData(prev => ({ ...prev, precio: formatChileanPrice(sanitizePriceDigits(e.target.value).slice(0, 15)) }))}
+                onFocus={(e) => setFormData(prev => ({ ...prev, precio: sanitizePriceDigits(e.target.value).slice(0, 15) }))}
+                maxLength={15}
+                className={`w-full px-3 py-2 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#EBC07A] bg-white/80 text-[#452216] shadow-sm ${
+                  errors.precio ? 'border-red-500' : 'border-[#783719]/30'
                 }`}
                 placeholder="Ej: 24990"
               />
@@ -234,22 +241,22 @@ export default function ProductModal({ isOpen, onClose, product = null, mode = '
 
             {/* Imagen */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
+              <label className="block text-sm font-medium text-[#783719] mb-3">
                 Imagen del producto *
               </label>
               
               {/* Selector de fuente de imagen */}
               <div className="mb-4">
-                <div className="flex gap-4">
+                <div className="flex gap-6">
                   <label className="flex items-center">
                     <input
                       type="radio"
                       name="imageSource"
                       checked={!useDeviceImage}
                       onChange={() => handleImageSourceChange(false)}
-                      className="mr-2"
+                      className="mr-2 accent-[#783719]"
                     />
-                    <span className="text-sm">URL de imagen</span>
+                    <span className="text-sm text-[#452216]">URL de imagen</span>
                   </label>
                   <label className="flex items-center">
                     <input
@@ -257,9 +264,9 @@ export default function ProductModal({ isOpen, onClose, product = null, mode = '
                       name="imageSource"
                       checked={useDeviceImage}
                       onChange={() => handleImageSourceChange(true)}
-                      className="mr-2"
+                      className="mr-2 accent-[#783719]"
                     />
-                    <span className="text-sm">Subir desde dispositivo</span>
+                    <span className="text-sm text-[#452216]">Subir desde dispositivo</span>
                   </label>
                 </div>
               </div>
@@ -272,8 +279,8 @@ export default function ProductModal({ isOpen, onClose, product = null, mode = '
                     name="imagen"
                     value={formData.imagen}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 ${
-                      errors.imagen ? 'border-red-500' : 'border-gray-300'
+                    className={`w-full px-3 py-2 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#EBC07A] bg-white/80 text-[#452216] shadow-sm ${
+                      errors.imagen ? 'border-red-500' : 'border-[#783719]/30'
                     }`}
                     placeholder="/imagenes/producto.jpg"
                   />
@@ -304,13 +311,13 @@ export default function ProductModal({ isOpen, onClose, product = null, mode = '
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                className="flex-1 px-4 py-2 rounded-lg bg-white text-[#783719] ring-1 ring-[#783719]/20 hover:bg-[#783719]/10 transition"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
-                className="flex-1 px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 transition-colors"
+                className="flex-1 px-4 py-2 rounded-lg bg-[#783719] text-[#F8EDD6] hover:bg-[#5f2c12] transition shadow"
               >
                 {mode === 'edit' ? 'Actualizar' : 'Agregar'}
               </button>

@@ -30,9 +30,14 @@ export default function CategoryModal({ isOpen, onClose }) {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    let processedValue = value;
+    if (name === 'name') {
+      // Limitar nombre de categoría a 35 caracteres
+      processedValue = value.slice(0, 35);
+    }
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: processedValue
     }));
     // Limpiar error del campo cuando el usuario empiece a escribir
     if (errors[name]) {
@@ -50,6 +55,8 @@ export default function CategoryModal({ isOpen, onClose }) {
       newErrors.name = 'El nombre de la categoría es requerido';
     } else if (formData.name.trim().length < 2) {
       newErrors.name = 'El nombre debe tener al menos 2 caracteres';
+    } else if (formData.name.trim().length > 35) {
+      newErrors.name = 'El nombre no puede superar 35 caracteres';
     }
     
     setErrors(newErrors);
@@ -116,13 +123,13 @@ export default function CategoryModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-gray-800">Gestionar Categorías</h2>
+    <div className="fixed inset-0 z-[1000] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-[#F8EDD6] rounded-2xl w-[92vw] sm:w-[520px] md:w-[640px] h-[640px] max-h-[80vh] mx-4 shadow-2xl ring-1 ring-[#783719]/20 overflow-hidden flex flex-col">
+        <div className="px-6 py-4 bg-[#783719] text-[#F8EDD6] flex items-center justify-between">
+          <h2 className="text-xl font-semibold">Gestionar Categorías</h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 text-2xl"
+            className="text-[#F8EDD6]/80 hover:text-white transition text-xl"
             disabled={isSubmitting}
           >
             ×
@@ -130,13 +137,13 @@ export default function CategoryModal({ isOpen, onClose }) {
         </div>
 
         {/* Pestañas */}
-        <div className="flex mb-6 border-b">
+        <div className="flex mb-6 border-b border-[#783719]/20">
           <button
             onClick={() => setView('add')}
-            className={`flex-1 py-2 px-4 text-sm font-medium ${
+            className={`flex-1 py-2 px-4 text-sm font-medium transition ${
               view === 'add'
-                ? 'border-b-2 border-blue-500 text-blue-600'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'border-b-2 border-[#EBC07A] text-[#783719]'
+                : 'text-[#452216]/70 hover:text-[#452216]'
             }`}
             disabled={isSubmitting}
           >
@@ -144,10 +151,10 @@ export default function CategoryModal({ isOpen, onClose }) {
           </button>
           <button
             onClick={() => setView('delete')}
-            className={`flex-1 py-2 px-4 text-sm font-medium ${
+            className={`flex-1 py-2 px-4 text-sm font-medium transition ${
               view === 'delete'
-                ? 'border-b-2 border-red-500 text-red-600'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'border-b-2 border-red-500 text-red-700'
+                : 'text-[#452216]/70 hover:text-[#452216]'
             }`}
             disabled={isSubmitting}
           >
@@ -157,9 +164,9 @@ export default function CategoryModal({ isOpen, onClose }) {
 
         {/* Vista de Agregar */}
         {view === 'add' && (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5 px-6 pb-6 flex-1 overflow-auto">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="name" className="block text-sm font-medium text-[#783719] mb-1">
                 Nombre de la Categoría *
               </label>
               <input
@@ -168,8 +175,9 @@ export default function CategoryModal({ isOpen, onClose }) {
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.name ? 'border-red-500' : 'border-gray-300'
+                maxLength={35}
+                className={`w-full px-3 py-2 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#EBC07A] bg-white/80 text-[#452216] shadow-sm ${
+                  errors.name ? 'border-red-500' : 'border-[#783719]/30'
                 }`}
                 placeholder="Ej: Bebidas, Postres, etc."
                 disabled={isSubmitting}
@@ -180,7 +188,7 @@ export default function CategoryModal({ isOpen, onClose }) {
             </div>
 
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="description" className="block text-sm font-medium text-[#783719] mb-1">
                 Descripción (opcional)
               </label>
               <textarea
@@ -189,7 +197,7 @@ export default function CategoryModal({ isOpen, onClose }) {
                 value={formData.description}
                 onChange={handleInputChange}
                 rows="3"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 rounded-xl border border-[#783719]/30 bg-white/80 focus:outline-none focus:ring-2 focus:ring-[#EBC07A] text-[#452216] shadow-sm"
                 placeholder="Descripción de la categoría..."
                 disabled={isSubmitting}
               />
@@ -199,14 +207,14 @@ export default function CategoryModal({ isOpen, onClose }) {
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                className="flex-1 px-4 py-2 rounded-lg bg-white text-[#783719] ring-1 ring-[#783719]/20 hover:bg-[#783719]/10 transition"
                 disabled={isSubmitting}
               >
                 Cancelar
               </button>
               <button
                 type="submit"
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2 rounded-lg bg-[#783719] text-[#F8EDD6] hover:bg-[#5f2c12] transition shadow disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? 'Agregando...' : 'Agregar Categoría'}
@@ -217,7 +225,7 @@ export default function CategoryModal({ isOpen, onClose }) {
 
         {/* Vista de Eliminar */}
         {view === 'delete' && !showConfirmation && (
-          <div className="space-y-4">
+          <div className="space-y-4 px-6 pb-6 flex-1 overflow-auto">
             <p className="text-sm text-gray-600 mb-4">
               Selecciona una categoría para eliminar. No se pueden eliminar categorías que tengan productos asociados.
             </p>
@@ -226,17 +234,17 @@ export default function CategoryModal({ isOpen, onClose }) {
               {categories.filter(cat => cat.id !== 'todos').map((category) => (
                 <div
                   key={category.id}
-                  className="flex items-center justify-between p-3 border border-gray-200 rounded-md hover:bg-gray-50"
+                  className="flex items-center justify-between p-3 border border-[#783719]/20 rounded-xl hover:bg-white/60 transition"
                 >
                   <div>
-                    <h3 className="font-medium text-gray-800">{category.name}</h3>
+                    <h3 className="font-medium text-[#452216]">{category.name}</h3>
                     {category.description && (
-                      <p className="text-sm text-gray-500">{category.description}</p>
+                      <p className="text-sm text-[#452216]/70">{category.description}</p>
                     )}
                   </div>
                   <button
                     onClick={() => handleDeleteClick(category)}
-                    className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors"
+                    className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition"
                     disabled={isSubmitting}
                   >
                     Eliminar
@@ -248,7 +256,7 @@ export default function CategoryModal({ isOpen, onClose }) {
             <div className="flex justify-end pt-4">
               <button
                 onClick={onClose}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                className="px-4 py-2 rounded-lg bg-white text-[#783719] ring-1 ring-[#783719]/20 hover:bg-[#783719]/10 transition"
                 disabled={isSubmitting}
               >
                 Cerrar
@@ -259,17 +267,17 @@ export default function CategoryModal({ isOpen, onClose }) {
 
         {/* Confirmación de eliminación */}
         {view === 'delete' && showConfirmation && (
-          <div className="space-y-4">
+          <div className="space-y-4 px-6 pb-6 flex-1 overflow-auto">
             <div className="text-center">
               <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
                 <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 19.5c-.77.833.192 2.5 1.732 2.5z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <h3 className="text-lg font-medium text-[#452216] mb-2">
                 ¿Confirmar eliminación?
               </h3>
-              <p className="text-sm text-gray-500 mb-4">
+              <p className="text-sm text-[#452216]/70 mb-4">
                 ¿Estás seguro de que deseas eliminar la categoría "{categoryToDelete?.name || categoryToDelete}"? 
                 Esta acción no se puede deshacer.
               </p>
@@ -278,14 +286,14 @@ export default function CategoryModal({ isOpen, onClose }) {
             <div className="flex gap-3">
               <button
                 onClick={handleCancelDelete}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                className="flex-1 px-4 py-2 rounded-lg bg-white text-[#783719] ring-1 ring-[#783719]/20 hover:bg-[#783719]/10 transition"
                 disabled={isSubmitting}
               >
                 Cancelar
               </button>
               <button
                 onClick={handleConfirmDelete}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? 'Eliminando...' : 'Eliminar'}

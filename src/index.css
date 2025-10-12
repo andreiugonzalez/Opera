@@ -49,22 +49,22 @@ main, div, section {
 /* Prevenir overflow horizontal global */
 /* Animaciones carrusel pedido */
 .fade-in {
-  animation: fadeIn 0.35s ease;
+  animation: fadeIn 1s ease;
 }
 .slide-left {
-  animation: slideLeft 0.35s ease;
+  animation: slideLeft 1s ease;
 }
 .slide-right {
-  animation: slideRight 0.35s ease;
+  animation: slideRight 1s ease;
 }
 .elegant-zoom-in {
-  animation: elegantZoomIn 320ms ease-out;
+  animation: elegantZoomIn 800ms ease-in-out both;
 }
 .elegant-slide-next {
-  animation: elegantSlideNext 320ms ease-out;
+  animation: elegantSlideNext 800ms cubic-bezier(.22,.61,.36,1) both;
 }
 .elegant-slide-prev {
-  animation: elegantSlidePrev 320ms ease-out;
+  animation: elegantSlidePrev 800ms cubic-bezier(.22,.61,.36,1) both;
 }
 .will-change-transform { will-change: transform; }
 
@@ -75,6 +75,84 @@ main, div, section {
 .no-scrollbar {
   -ms-overflow-style: none; /* IE y Edge */
   scrollbar-width: none; /* Firefox */
+}
+
+/* Animaciones de aparición sutiles para páginas y elementos */
+.fade-in-up {
+  animation: fadeInUp 420ms ease-out both;
+}
+.fade-in-zoom {
+  animation: fadeZoom 420ms ease-out both;
+}
+.appear-page {
+  /* Utilidad general de aparición para contenedores */
+  animation: fadeInUp 480ms ease-out both;
+}
+.fade-in-stagger li {
+  opacity: 0;
+  transform: translateY(8px);
+  animation: fadeInUp 420ms ease-out forwards;
+}
+.fade-in-stagger li:nth-child(1) { animation-delay: 60ms; }
+.fade-in-stagger li:nth-child(2) { animation-delay: 120ms; }
+.fade-in-stagger li:nth-child(3) { animation-delay: 180ms; }
+.fade-in-stagger li:nth-child(4) { animation-delay: 240ms; }
+.fade-in-stagger li:nth-child(5) { animation-delay: 300ms; }
+.fade-in-stagger li:nth-child(6) { animation-delay: 360ms; }
+
+@keyframes fadeInUp {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeZoom {
+  0% { opacity: 0; transform: scale(0.985); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* Respeto por usuarios con motion reducido */
+@media (prefers-reduced-motion: reduce) {
+  .fade-in, .fade-in-up, .fade-in-zoom, .elegant-zoom-in,
+  .elegant-slide-next, .elegant-slide-prev, .slide-left, .slide-right,
+  .fade-in-stagger li, .btn-sheen, .breathe-subtle, .gradient-animated {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Variantes intensas (strong) para destacar más el fade y entrada */
+.fade-in-strong {
+  animation: fadeInStrong 700ms cubic-bezier(.22,.61,.36,1) both;
+}
+.fade-in-up-strong {
+  animation: fadeInUpStrong 700ms cubic-bezier(.22,.61,.36,1) both;
+}
+.fade-in-zoom-strong {
+  animation: fadeZoomStrong 700ms cubic-bezier(.22,.61,.36,1) both;
+}
+.fade-in-stagger-strong li {
+  opacity: 0;
+  transform: translateY(14px) scale(0.98);
+  filter: blur(2px);
+  animation: fadeInUpStrong 700ms cubic-bezier(.22,.61,.36,1) forwards;
+}
+.fade-in-stagger-strong li:nth-child(1) { animation-delay: 80ms; }
+.fade-in-stagger-strong li:nth-child(2) { animation-delay: 160ms; }
+.fade-in-stagger-strong li:nth-child(3) { animation-delay: 240ms; }
+.fade-in-stagger-strong li:nth-child(4) { animation-delay: 320ms; }
+.fade-in-stagger-strong li:nth-child(5) { animation-delay: 400ms; }
+.fade-in-stagger-strong li:nth-child(6) { animation-delay: 480ms; }
+
+@keyframes fadeInStrong {
+  0% { opacity: 0; transform: translateY(10px); filter: blur(2px); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+@keyframes fadeInUpStrong {
+  0% { opacity: 0; transform: translateY(18px) scale(0.98); filter: blur(2px); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+@keyframes fadeZoomStrong {
+  0% { opacity: 0; transform: scale(0.96); filter: blur(2px); }
+  100% { opacity: 1; transform: scale(1); filter: blur(0); }
 }
 
 @keyframes fadeIn {
@@ -95,10 +173,877 @@ main, div, section {
   100% { transform: scale(1); }
 }
 @keyframes elegantSlideNext {
-  0% { transform: translateX(14px); }
-  100% { transform: translateX(0); }
+  0% { transform: translateX(12px) scale(0.995); transform-origin: 50% 50%; }
+  100% { transform: translateX(0) scale(1); }
 }
 @keyframes elegantSlidePrev {
-  0% { transform: translateX(-14px); }
-  100% { transform: translateX(0); }
+  0% { transform: translateX(-12px) scale(0.995); transform-origin: 50% 50%; }
+  100% { transform: translateX(0) scale(1); }
+}
+
+/* (Revert) Eliminadas variables y utilidades de paleta personalizada */
+/* Texto con degradado animado (FBDFA2 ↔ B78456) para títulos elegantes */
+.gradient-animated {
+  /* Degradado con banda clara que se desplaza de izquierda a derecha */
+  background-image: linear-gradient(90deg,
+    #452216 0%,
+    #783719 33%,
+    #A87557 50%, /* banda más clara */
+    #783719 67%,
+    #452216 100%
+  );
+  background-size: 300% 100%;
+  background-position: 0% 50%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gradientShift 12s ease-in-out infinite; /* movimiento suave */
+  will-change: background-position;
+}
+
+/* Brillo suave para resaltar el texto */
+.text-glow-soft {
+  text-shadow: 0 0 3px rgba(120, 55, 25, 0.25),
+               0 1px 8px rgba(69, 34, 22, 0.2);
+}
+
+/* Contorno sutil para mayor legibilidad y elegancia */
+.text-outline-elegant {
+  -webkit-text-stroke: 0.5px rgba(255, 255, 255, 0.12);
+}
+
+/* Nitidez de texto para evitar apariencia borrosa */
+.text-crisp {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Contorno fuerte para textos sobre fondos difusos */
+.text-outline-strong {
+  text-shadow:
+    -1px 0 0 rgba(0, 0, 0, 0.65),
+     0 1px 0 rgba(0, 0, 0, 0.65),
+     1px 0 0 rgba(0, 0, 0, 0.65),
+     0 -1px 0 rgba(0, 0, 0, 0.65);
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Animaciones sutiles para botones */
+.btn-sheen {
+  /* brillo diagonal suave que recorre el botón */
+  background-image: linear-gradient(120deg,
+    rgba(255, 255, 255, 0) 32%,
+    rgba(255, 255, 255, 0.32) 50%,
+    rgba(255, 255, 255, 0) 68%
+  ); /* banda luminosa y notoria */
+  background-size: 300% 300%;
+  background-position: 0% 50%;
+  animation: sheenMove 8.5s ease-in-out infinite; /* más lento por defecto y visible */
+}
+
+.btn-sheen:hover {
+  /* acelera el brillo al pasar el mouse */
+  animation-duration: 2.2s; /* más rápido en hover, sin exagerar */
+}
+
+@keyframes sheenMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+.breathe-subtle {
+  will-change: transform, filter;
+  animation: breatheSubtle 6s ease-in-out infinite;
+}
+
+/* Flotación sutil reutilizable para formularios/contenedores */
+.float-subtle {
+  will-change: transform, filter;
+  animation: floatCard 8s ease-in-out infinite;
+}
+
+/* Flotación elegante para tarjetas y contenedores */
+.float-card {
+  will-change: transform, filter;
+  animation: floatCard 6.5s ease-in-out infinite;
+}
+.float-slow { animation-duration: 9s; }
+.float-fast { animation-duration: 4.5s; }
+
+/* Flotación más notoria para elementos que deben destacar */
+.float-strong {
+  will-change: transform, filter;
+  animation: floatCardStrong 10s ease-in-out infinite;
+}
+
+@keyframes floatCardStrong {
+  0%   { transform: translateY(0); }
+  20%  { transform: translateY(-6px); }
+  50%  { transform: translateY(4px); }
+  80%  { transform: translateY(-3px); }
+  100% { transform: translateY(0); }
+}
+
+@keyframes floatCard {
+  0% { transform: translateY(0) scale(1); filter: drop-shadow(0 2px 2px rgba(0,0,0,0.06)); }
+  25% { transform: translateY(-6px) scale(1.005); filter: drop-shadow(0 6px 6px rgba(0,0,0,0.08)); }
+  50% { transform: translateY(0) scale(1); filter: drop-shadow(0 2px 2px rgba(0,0,0,0.06)); }
+  75% { transform: translateY(6px) scale(0.997); filter: drop-shadow(0 1px 1px rgba(0,0,0,0.05)); }
+  100% { transform: translateY(0) scale(1); filter: drop-shadow(0 2px 2px rgba(0,0,0,0.06)); }
+}
+
+/* Stagger genérico para hijos directos (no solo listas) */
+.stagger-children-strong > * {
+  opacity: 0;
+  transform: translateY(14px) scale(0.98);
+  filter: blur(1.5px);
+  animation: fadeInUpStrong 700ms cubic-bezier(.22,.61,.36,1) forwards;
+}
+.stagger-children-strong > *:nth-child(1) { animation-delay: 80ms; }
+.stagger-children-strong > *:nth-child(2) { animation-delay: 160ms; }
+.stagger-children-strong > *:nth-child(3) { animation-delay: 240ms; }
+.stagger-children-strong > *:nth-child(4) { animation-delay: 320ms; }
+.stagger-children-strong > *:nth-child(5) { animation-delay: 400ms; }
+.stagger-children-strong > *:nth-child(6) { animation-delay: 480ms; }
+.stagger-children-strong > *:nth-child(7) { animation-delay: 560ms; }
+.stagger-children-strong > *:nth-child(8) { animation-delay: 640ms; }
+.stagger-children-strong > *:nth-child(9) { animation-delay: 720ms; }
+
+/* Utilidades simples de delay para animaciones personalizadas */
+.delay-150 { animation-delay: 150ms !important; }
+.delay-300 { animation-delay: 300ms !important; }
+.delay-450 { animation-delay: 450ms !important; }
+.delay-600 { animation-delay: 600ms !important; }
+
+/* En móviles, mostrar elementos inmediatamente sin stagger para mejor respuesta */
+@media (max-width: 640px) {
+  .stagger-children-strong > * {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}
+
+/* Respetar motion reducido también en nuevas utilidades */
+@media (prefers-reduced-motion: reduce) {
+  .float-card, .stagger-children-strong > *, .delay-150, .delay-300, .delay-450, .delay-600 {
+    animation: none !important;
+    transition: none !important;
+    filter: none !important;
+  }
+}
+
+@keyframes breatheSubtle {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.02);
+    filter: brightness(1.03);
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+/* Flotación elegante para el botón Admin */
+.float-elegant {
+  will-change: transform;
+  animation: floatElegant 8s ease-in-out infinite;
+}
+
+@keyframes floatElegant {
+  0%   { transform: translateY(0) translateX(0); }
+  25%  { transform: translateY(-2px) translateX(1px); }
+  50%  { transform: translateY(1px) translateX(-1px); }
+  75%  { transform: translateY(-1px) translateX(0.5px); }
+  100% { transform: translateY(0) translateX(0); }
+}
+
+/* Gradiente animado de color para botones */
+.btn-gradient-flow {
+  background-image: linear-gradient(90deg,
+    #5f2d14 0%,
+    #B88460 50%,
+    #5f2d14 100%
+  ); /* base oscura con intermedio ligeramente más claro para contraste elegante */
+  background-size: 200% 200%;
+  background-position: 0% 50%;
+  animation: btnGradientFlow 9s ease-in-out infinite;
+}
+
+.btn-gradient-flow:hover {
+  animation-duration: 3s;
+}
+
+@keyframes btnGradientFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Brillo elegante solo en hover usando pseudo-elemento */
+.btn-hover-elegant {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-hover-elegant::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(120deg,
+    rgba(255,255,255,0) 45%,
+    rgba(255,255,255,0.22) 50%,
+    rgba(255,255,255,0) 55%
+  );
+  background-size: 300% 300%;
+  background-position: -150% 50%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 240ms ease;
+}
+
+.btn-hover-elegant:hover::after {
+  opacity: 0.85;
+  animation: elegantSheen 1.8s ease-in-out forwards;
+}
+
+@keyframes elegantSheen {
+  0%   { background-position: -150% 50%; }
+  100% { background-position: 150% 50%; }
+}
+
+/* Marco elegante para toda la página: contorno y sombras sutiles */
+.page-frame-elegant {
+  position: relative;
+  isolation: isolate; /* asegura capas limpias para pseudo-elementos */
+}
+
+.page-frame-elegant::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  /* viñeteado suave en los bordes para sensación de marco */
+  box-shadow:
+    inset 0 0 80px rgba(69, 34, 22, 0.22),
+    inset 0 12px 28px rgba(69, 34, 22, 0.15),
+    inset 0 -12px 26px rgba(69, 34, 22, 0.12);
+}
+
+.page-frame-elegant::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  /* leve degradado lateral y superior para un acabado profesional */
+  background:
+    linear-gradient(to right, rgba(0,0,0,0.06), rgba(0,0,0,0), rgba(0,0,0,0.06)),
+    linear-gradient(to bottom, rgba(248, 237, 214, 0.08), rgba(248, 237, 214, 0));
+  opacity: 0.55;
+}
+
+/* Elevación sutil opcional para contenedor principal de contenido */
+.page-content-elevate {
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 4px 14px rgba(69, 34, 22, 0.18));
+}
+
+/* Tarjeta elegante reutilizable para recuadros */
+.card-elegant {
+  background-color: white;
+  border-radius: 16px;
+  border: 1px solid rgba(184, 132, 96, 0.28); /* tono cálido suave */
+  box-shadow:
+    0 14px 28px rgba(69, 34, 22, 0.08), /* sombra exterior suave */
+    0 10px 10px rgba(69, 34, 22, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6), /* borde interior ligero para profundidad */
+    inset 0 -1px 0 rgba(184, 132, 96, 0.1);
+  transition: transform 300ms ease, box-shadow 300ms ease, border-color 300ms ease;
+}
+
+.card-elegant:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 18px 32px rgba(69, 34, 22, 0.12),
+    0 12px 12px rgba(69, 34, 22, 0.08);
+  border-color: rgba(184, 132, 96, 0.42);
+}
+
+.card-elegant .card-header {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(184, 132, 96, 0.18);
+  background: linear-gradient(to bottom, rgba(248, 237, 214, 0.5), rgba(248, 237, 214, 0));
+}
+
+.card-elegant .card-body {
+  padding: 1rem 1.25rem;
+}
+
+.card-elegant .card-footer {
+  padding: 0.75rem 1rem;
+  border-top: 1px solid rgba(184, 132, 96, 0.18);
+  background: linear-gradient(to top, rgba(248, 237, 214, 0.5), rgba(248, 237, 214, 0));
+}
+
+/* Tarjeta luminosa para secciones informativas (Ubicación) */
+.card-luminous-amber {
+  position: relative;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #FFF8E8 0%, #F8EDD6 45%, #FBDFA2 100%);
+  border: 1px solid rgba(184, 132, 96, 0.32);
+  box-shadow:
+    0 14px 28px rgba(184, 132, 86, 0.18),
+    0 10px 10px rgba(69, 34, 22, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  transition: transform 280ms ease, box-shadow 280ms ease, filter 280ms ease;
+}
+.card-luminous-amber:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 18px 32px rgba(184, 132, 86, 0.24),
+    0 12px 12px rgba(69, 34, 22, 0.10);
+  filter: brightness(1.02);
+}
+
+/* Marco luminoso para iframes de mapas o imágenes incrustadas */
+.map-frame-luminous {
+  border-radius: 16px;
+  border: 1px solid rgba(184, 132, 96, 0.35);
+  background: linear-gradient(to bottom, rgba(248, 237, 214, 0.35), rgba(248, 237, 214, 0));
+  box-shadow: 0 12px 26px rgba(184, 132, 86, 0.22), inset 0 1px 0 rgba(255,255,255,0.6);
+}
+
+/* Utilidad de fondo crema suave */
+.bg-cream-soft {
+  background-color: #FFF8E8;
+}
+
+/* Texto acento ámbar fuerte */
+.text-amber-strong {
+  color: #783719;
+}
+
+/* Tarjeta elegante con fondo cálido #B78356 y animación sutil */
+.card-b78356 {
+  position: relative;
+  background: linear-gradient(135deg, #B78356 0%, #c3916e 50%, #a96f43 100%);
+  border: 1px solid rgba(69, 34, 22, 0.28);
+  box-shadow: 0 14px 28px rgba(69, 34, 22, 0.12), 0 10px 10px rgba(69, 34, 22, 0.08);
+  background-size: 200% 200%;
+  overflow: hidden;
+  color: #F8EDD6;
+  transition: transform 300ms ease, box-shadow 300ms ease, background-position 600ms ease;
+}
+
+/* Realce suave con brillos radiales para un acabado elegante */
+.card-b78356::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(120px 80px at 12% -10%, rgba(255,255,255,0.25), transparent 70%),
+    radial-gradient(160px 100px at 88% 110%, rgba(255,255,255,0.18), transparent 60%);
+  mix-blend-mode: soft-light;
+}
+
+/* Animación al pasar el cursor: brillo y leve elevación */
+.card-b78356:hover {
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 0 18px 32px rgba(69, 34, 22, 0.18), 0 12px 12px rgba(69, 34, 22, 0.12);
+  animation: cardSheenB78356 1.8s ease-in-out;
+}
+
+/* Contraste de texto dentro del recuadro */
+.card-b78356 h1,
+.card-b78356 h2,
+.card-b78356 h3,
+.card-b78356 p,
+.card-b78356 span,
+.card-b78356 div {
+  color: #F8EDD6 !important;
+}
+
+/* Animación de desplazamiento suave del degradado y leve respiración de la sombra */
+@keyframes cardSheenB78356 {
+  0% {
+    background-position: 0% 50%;
+    box-shadow: 0 12px 24px rgba(69, 34, 22, 0.12), 0 8px 8px rgba(69, 34, 22, 0.08);
+  }
+  50% {
+    background-position: 100% 50%;
+    box-shadow: 0 16px 32px rgba(69, 34, 22, 0.16), 0 12px 12px rgba(69, 34, 22, 0.10);
+  }
+  100% {
+    background-position: 0% 50%;
+    box-shadow: 0 12px 24px rgba(69, 34, 22, 0.12), 0 8px 8px rgba(69, 34, 22, 0.08);
+  }
+}
+
+/* Subrayado elegante alineado a la izquierda (para títulos en tarjetas) */
+.underline-left-elegant {
+  position: relative;
+  display: inline-block;
+  text-decoration: none;
+}
+.underline-left-elegant::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -8px;
+  height: 3px;
+  width: 48%;
+  border-radius: 9999px;
+  background-image: linear-gradient(90deg,
+    #452216 0%,
+    #783719 50%,
+    #B78456 100%
+  );
+  box-shadow: 0 2px 6px rgba(69,34,22,0.28);
+}
+
+/* Rendimiento móvil: reducir animaciones y filtros pesados */
+@media (max-width: 640px), (hover: none) and (pointer: coarse) {
+  /* Desactivar solo animaciones de flotado continuo (costosas en móvil) */
+  .float-card,
+  .float-strong,
+  .float-elegant {
+    animation: none !important;
+  }
+  /* Mantener botones vivos: permitir transiciones/animaciones ligeras */
+  .btn-gradient-flow,
+  .btn-sheen,
+  .gradient-animated {
+    transition: transform 160ms ease, filter 160ms ease;
+    animation-duration: 10s; /* más suave */
+  }
+
+  /* Suavizar transiciones en tarjetas con fondos y sombras pesadas */
+  .card-elegant,
+  .card-b78356,
+  .chart-elegant-783719 {
+    transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms ease;
+    will-change: auto;
+  }
+
+  /* Desactivar escalados en hover para evitar re-render pesado en móvil */
+  .card-elegant:hover,
+  .card-b78356:hover,
+  .chart-elegant-783719:hover {
+    transform: translateY(-1px); /* feedback sutil */
+    filter: brightness(1.02);
+  }
+
+  /* Productos: evitar blur en no-hover y flotación continua en móvil */
+  .productos-grid .chart-elegant-783719 {
+    filter: none;
+    opacity: 1;
+  }
+  .productos-grid .float-strong,
+  .productos-grid .float-card {
+    animation: none;
+  }
+}
+
+/* Footer elegante: borde superior y sombra interior sutil */
+.footer-elegant {
+  border-top: 1px solid rgba(248, 237, 214, 0.32);
+  box-shadow: inset 0 8px 18px rgba(0, 0, 0, 0.12);
+}
+/* Subrayado elegante para títulos */
+.underline-elegant {
+  position: relative;
+  display: inline-block;
+  text-decoration: none;
+}
+.underline-elegant::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: -8px;
+  height: 3px;
+  width: 60%;
+  border-radius: 9999px;
+  background-image: linear-gradient(90deg,
+    #452216 0%,
+    #783719 50%,
+    #B78456 100%
+  );
+  box-shadow: 0 2px 6px rgba(69,34,22,0.28);
+}
+
+/* Tarjeta/Chart con acento 783719 */
+.chart-elegant-783719 {
+  background: linear-gradient(180deg, #783719 0%, #5f2d14 100%);
+  border: 1px solid rgba(248, 237, 214, 0.22);
+  box-shadow:
+    0 14px 28px rgba(69, 34, 22, 0.22),
+    0 10px 10px rgba(69, 34, 22, 0.18);
+}
+.chart-elegant-783719:hover {
+  box-shadow:
+    0 18px 32px rgba(69, 34, 22, 0.28),
+    0 12px 12px rgba(69, 34, 22, 0.22);
+  filter: brightness(1.03);
+}
+
+/* Botón flotante con cambio de color basado en 783719 */
+.btn-floating-elegant-783719 {
+  background-image: linear-gradient(90deg,
+    #452216 0%,
+    #783719 25%,
+    #B78456 50%,
+    #783719 75%,
+    #452216 100%
+  );
+  color: #fff;
+  background-size: 240% 240%;
+  background-position: 0% 50%;
+  animation: btnGradientFlow 8s ease-in-out infinite, floatElegant 8s ease-in-out infinite;
+}
+.btn-floating-elegant-783719:hover {
+  animation-duration: 3s, 6s;
+  filter: brightness(1.06);
+}
+
+/* Botón flotante con color fijo #452216 y brillo en movimiento */
+.btn-floating-452216 {
+  background-color: #452216;
+  color: #ffffff;
+  border-radius: 0.5rem; /* por si el botón no define radios */
+  /* flotado sutil continuo */
+  will-change: transform, background-position, filter;
+  animation: floatElegant 8s ease-in-out infinite;
+}
+.btn-floating-452216:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+}
+
+/* Combina bien con btn-sheen (brillo diagonal) */
+.btn-floating-452216.btn-sheen {
+  /* usa el brillo definido en .btn-sheen sin perder color base */
+  background-blend-mode: overlay;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .underline-elegant::after,
+  .chart-elegant-783719,
+  .btn-floating-elegant-783719 {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Pausa transiciones/animaciones mientras se ajusta el viewport (resize/orientationchange) */
+html.resizing *,
+html.resizing *::before,
+html.resizing *::after {
+  transition: none !important;
+  animation-play-state: paused !important;
+}
+
+/* Botón circular de retroceso con brillo y acento #783719 */
+.btn-back-783719 {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 9999px;
+  color: #ffffff;
+  background-image: linear-gradient(180deg, #5f2d14 0%, #783719 55%, #452216 100%);
+  box-shadow: 0 8px 20px rgba(69,34,22,0.28);
+  border: 1px solid rgba(248, 237, 214, 0.22);
+  overflow: hidden;
+  will-change: transform, filter, background-position;
+}
+.btn-back-783719:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+  box-shadow: 0 12px 28px rgba(69,34,22,0.32);
+}
+.btn-back-783719:active {
+  transform: scale(0.97);
+}
+/* Halo de brillo suave (estático) */
+/* Brillo animado transversal (continuo) */
+.btn-back-783719::after {
+  content: "";
+  position: absolute;
+  inset: -2px; /* cubre todo el botón */
+  background-image: linear-gradient(120deg,
+    rgba(255,255,255,0) 45%,
+    rgba(255,255,255,0.35) 50%,
+    rgba(255,255,255,0) 55%
+  );
+  background-size: 300% 300%;
+  background-position: -150% 50%;
+  pointer-events: none;
+  mix-blend-mode: screen; /* se integra con el degradado base */
+  opacity: 0.85;
+  animation: backSheenMove 3.2s ease-in-out infinite;
+}
+/* Integración con .btn-sheen para brillo dinámico */
+.btn-back-783719.btn-sheen {
+  background-blend-mode: overlay;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-back-783719 {
+    transition: none !important;
+    animation: none !important;
+  }
+  .btn-back-783719:hover {
+    transform: none !important;
+    filter: none !important;
+  }
+  .btn-back-783719::after {
+    animation: none !important;
+    opacity: 0.7;
+  }
+}
+
+/* Animación del brillo para los botones de retroceder */
+@keyframes backSheenMove {
+  0% { background-position: -150% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 250% 50%; }
+}
+
+/* Título Pedidos más oscuro con brillo en movimiento */
+.pedidos-title-sheen-dark {
+  background-image: linear-gradient(90deg,
+    #5f2d14 0%,
+    #5f2d14 44%,
+    rgba(255, 255, 255, 0.9) 50%,
+    #5f2d14 56%,
+    #5f2d14 100%
+  );
+  background-size: 200% 100%;
+  background-position: 0% 50%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: textSheenMove 3.6s ease-in-out infinite;
+}
+@keyframes textSheenMove {
+  0% { background-position: -50% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 250% 50%; }
+}
+
+/* Recuadro de introducción sólido sin degradado */
+.pedidos-intro {
+  background: #FBDFA2;
+  border: 1px solid rgba(184, 132, 86, 0.36);
+}
+
+/* ===== Sección Pedidos (paleta 783719, B78456, FBDFA2) ===== */
+.pedidos-hero {
+  /* Fondo sólido más oscuro para todo el contenedor de Pedidos */
+  background: #E6B76A; /* tono más intenso que #FBDFA2 */
+}
+.pedidos-title-gradient {
+  background-image: linear-gradient(90deg, #783719 0%, #B78456 50%, #FBDFA2 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.pedidos-intro {
+  background: #EFC46D; /* más oscuro, sólido */
+  border: 1px solid rgba(184, 132, 86, 0.44);
+  box-shadow: 0 10px 18px rgba(120, 55, 25, 0.12);
+}
+.pedidos-card {
+  position: relative;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid rgba(184, 132, 96, 0.28);
+  box-shadow: 0 14px 28px rgba(69, 34, 22, 0.08), 0 10px 10px rgba(69, 34, 22, 0.06);
+  transition: transform 300ms ease, box-shadow 300ms ease, filter 300ms ease;
+}
+.pedidos-card:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 18px 32px rgba(69, 34, 22, 0.12), 0 12px 12px rgba(69, 34, 22, 0.08);
+  filter: brightness(1.03);
+}
+
+/* Animación elegante para imágenes de tortas */
+.cake-photo {
+  will-change: transform, filter;
+  animation: cakeFloat 7.2s ease-in-out infinite;
+}
+.cake-photo:hover {
+  transform: scale(1.02);
+  filter: brightness(1.04) contrast(1.02);
+}
+@keyframes cakeFloat {
+  0%   { transform: translateY(0) scale(1); filter: drop-shadow(0 2px 2px rgba(0,0,0,0.06)); }
+  22%  { transform: translateY(-4px) scale(1.005); filter: drop-shadow(0 6px 6px rgba(0,0,0,0.08)); }
+  50%  { transform: translateY(1px) scale(1.0); filter: drop-shadow(0 3px 3px rgba(0,0,0,0.07)); }
+  78%  { transform: translateY(5px) scale(0.997); filter: drop-shadow(0 1px 1px rgba(0,0,0,0.05)); }
+  100% { transform: translateY(0) scale(1); filter: drop-shadow(0 2px 2px rgba(0,0,0,0.06)); }
+}
+
+/* Brillo diagonal sutil para tarjetas de tortas */
+.pedidos-card.btn-sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(120deg,
+    rgba(255,255,255,0) 45%,
+    rgba(255,255,255,0.16) 50%,
+    rgba(255,255,255,0) 55%
+  );
+  background-size: 300% 300%;
+  background-position: -150% 50%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 240ms ease;
+}
+.pedidos-card:hover.btn-sheen::after {
+  opacity: 0.9;
+  animation: elegantSheen 1.8s ease-in-out forwards;
+}
+
+/* ===== Enriquecimiento de Productos: chips y lista con íconos ===== */
+.chip-elegant-amber {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #fff;
+  background-image: linear-gradient(90deg, #B78456 0%, #783719 100%);
+  box-shadow: 0 8px 18px rgba(69, 34, 22, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  transition: transform 200ms ease, filter 200ms ease, box-shadow 200ms ease;
+}
+.chip-elegant-amber:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow: 0 12px 24px rgba(69, 34, 22, 0.2);
+}
+.chip-outline-amber {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #452216;
+  background: #EBC07A; /* Más oscuro para mejor legibilidad */
+  border: 1px solid rgba(69, 34, 22, 0.25);
+  box-shadow: 0 8px 18px rgba(69, 34, 22, 0.12);
+  transition: transform 200ms ease, filter 200ms ease, box-shadow 200ms ease;
+}
+.chip-outline-amber:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+  box-shadow: 0 12px 22px rgba(69, 34, 22, 0.18);
+}
+.feature-list-elegant {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.feature-list-elegant li {
+  position: relative;
+  padding-left: 28px;
+  margin-bottom: 10px;
+  color: #452216;
+}
+.feature-list-elegant li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 6px;
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
+  background-image: linear-gradient(135deg, #B78456 0%, #783719 100%);
+  box-shadow: 0 3px 8px rgba(69, 34, 22, 0.2);
+}
+@media (prefers-reduced-motion: reduce) {
+  .chip-elegant-amber,
+  .chip-outline-amber {
+    transition: none !important;
+  }
+}
+
+/* Utilidad para que el chip se expanda al ancho de su celda */
+.chip-full {
+  display: flex; /* Sobrescribe inline-flex */
+  width: 100%;
+  justify-content: center;
+}
+
+/* Stack de chip con icono circular */
+.category-chip-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.category-icon-circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 9999px;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 8px 16px rgba(69, 34, 22, 0.18);
+  background-color: #FFF7EA;
+}
+
+.category-icon-circle:hover {
+  transform: translateY(-1px);
+  transition: transform 200ms ease;
+}
+/* Estilos del selector de fecha (Flatpickr) en tema Opera */
+.datepicker-input::placeholder {
+  color: #A87557; /* placeholder dorado suave */
+  opacity: 1;
+}
+.flatpickr-calendar {
+  background: #6E3A22; /* fondo acorde */
+  border: 2px solid #B78456;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+}
+.flatpickr-months .flatpickr-month, .flatpickr-weekdays {
+  color: #F8EDD6;
+}
+.flatpickr-day {
+  color: #F8EDD6;
+}
+.flatpickr-day:hover, .flatpickr-day.selected, .flatpickr-day.today {
+  background: #B78456;
+  border-color: #B78456;
+  color: #452216;
+}
+.flatpickr-weekdays .flatpickr-weekday {
+  color: #FBDFA2;
+}
+.flatpickr-next-month, .flatpickr-prev-month {
+  fill: #F8EDD6;
 }

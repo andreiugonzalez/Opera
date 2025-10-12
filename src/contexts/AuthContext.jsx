@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useRef } from 'react';
 // NOTA IMPORTANTE (deploy/Vercel):
 // - La variable `API_BASE_URL` se toma de `import.meta.env.VITE_API_BASE_URL`.
 //   Si no está definida, en localhost usa `http://localhost:3001/api`,
@@ -24,6 +24,11 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [shouldResetApp, setShouldResetApp] = useState(false);
+  const idleTimerRef = useRef(null);
+  const activityHandlersRef = useRef([]);
+  const storageHandlerRef = useRef(null);
+  // Producción: 15 minutos (900000 ms). Si después quieres 2 horas: 2 * 60 * 60 * 1000.
+  const INACTIVITY_LIMIT_MS = 15 * 60 * 1000;
 
   // Tipos de usuario
   const USER_TYPES = {
@@ -149,6 +154,117 @@ export const AuthProvider = ({ children }) => {
       }, 100);
     });
   };
+
+  // ----- Gestión de inactividad (solo admins) -----
+  const emitActivitySignal = () => {
+    try {
+      localStorage.setItem('opera_activity', JSON.stringify({ t: Date.now(), r: Math.random() }));
+    } catch {}
+  };
+
+  const emitForceLogoutSignal = () => {
+    try {
+      localStorage.setItem('opera_force_logout', JSON.stringify({ t: Date.now(), r: Math.random() }));
+    } catch {}
+  };
+
+  const clearIdleTimer = () => {
+    if (idleTimerRef.current) {
+      clearTimeout(idleTimerRef.current);
+      idleTimerRef.current = null;
+    }
+  };
+
+  const handleIdleTimeout = () => {
+    emitForceLogoutSignal();
+    logout();
+  };
+
+  const resetIdleTimer = () => {
+    if (!isAdmin()) return;
+    clearIdleTimer();
+    try {
+      localStorage.setItem('opera_last_activity_admin', String(Date.now()));
+    } catch {}
+    idleTimerRef.current = setTimeout(handleIdleTimeout, INACTIVITY_LIMIT_MS);
+  };
+
+  useEffect(() => {
+    // Registrar listeners al convertirse en admin; limpiar al salir.
+    if (isAdmin()) {
+      const activityEvents = ['mousemove', 'mousedown', 'keydown', 'scroll', 'wheel', 'touchstart', 'touchmove', 'visibilitychange', 'click'];
+      const onActivity = () => {
+        resetIdleTimer();
+        emitActivitySignal();
+      };
+      activityHandlersRef.current = activityEvents.map(ev => {
+        const handler = onActivity;
+        window.addEventListener(ev, handler, { passive: true });
+        return { ev, handler };
+      });
+
+      // Sincronización entre pestañas
+      const onStorage = (e) => {
+        if (e.key === 'opera_activity') {
+          resetIdleTimer();
+        } else if (e.key === 'opera_force_logout') {
+          handleIdleTimeout();
+        }
+      };
+      storageHandlerRef.current = onStorage;
+      window.addEventListener('storage', onStorage);
+
+      // Restaurar último tiempo de actividad (si existe)
+      try {
+        const last = Number(localStorage.getItem('opera_last_activity_admin'));
+        if (last && Date.now() - last >= INACTIVITY_LIMIT_MS) {
+          handleIdleTimeout();
+        } else {
+          resetIdleTimer();
+        }
+      } catch {
+        resetIdleTimer();
+      }
+
+      // Helpers de prueba
+      window.__forceIdleLogout = handleIdleTimeout;
+      window.__resetIdleTimer = resetIdleTimer;
+    } else {
+      // No admin: asegurar que no haya temporizador ni listeners.
+      clearIdleTimer();
+      if (activityHandlersRef.current.length) {
+        activityHandlersRef.current.forEach(({ ev, handler }) => {
+          window.removeEventListener(ev, handler);
+        });
+        activityHandlersRef.current = [];
+      }
+      if (storageHandlerRef.current) {
+        window.removeEventListener('storage', storageHandlerRef.current);
+        storageHandlerRef.current = null;
+      }
+      try {
+        localStorage.removeItem('opera_last_activity_admin');
+      } catch {}
+      delete window.__forceIdleLogout;
+      delete window.__resetIdleTimer;
+    }
+
+    // Cleanup cuando cambia usuario o se desmonta
+    return () => {
+      clearIdleTimer();
+      if (activityHandlersRef.current.length) {
+        activityHandlersRef.current.forEach(({ ev, handler }) => {
+          window.removeEventListener(ev, handler);
+        });
+        activityHandlersRef.current = [];
+      }
+      if (storageHandlerRef.current) {
+        window.removeEventListener('storage', storageHandlerRef.current);
+        storageHandlerRef.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   // Verificar si es administrador
   const isAdmin = () => {

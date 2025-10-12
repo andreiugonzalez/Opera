@@ -82,6 +82,13 @@ export const ProductsProvider = ({ children }) => {
       });
       
       if (!response.ok) {
+        if (response.status === 401) {
+          const text = await response.text();
+          throw new Error('Sesión requerida: inicia sesión como administrador para agregar productos.');
+        }
+        if (response.status === 403) {
+          throw new Error('Permisos insuficientes: tu cuenta no tiene rol de administrador.');
+        }
         throw new Error('Error al agregar producto');
       }
       
@@ -117,6 +124,12 @@ export const ProductsProvider = ({ children }) => {
       if (!response.ok) {
         const errorText = await response.text();
         console.error('❌ Error en respuesta:', errorText);
+        if (response.status === 401) {
+          throw new Error('Sesión requerida: inicia sesión nuevamente, tu token pudo expirar.');
+        }
+        if (response.status === 403) {
+          throw new Error('Permisos insuficientes: solo administradores pueden editar productos.');
+        }
         throw new Error('Error al editar producto');
       }
       
@@ -156,6 +169,12 @@ export const ProductsProvider = ({ children }) => {
       });
       
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Sesión requerida: inicia sesión para eliminar productos.');
+        }
+        if (response.status === 403) {
+          throw new Error('Permisos insuficientes: requiere rol administrador.');
+        }
         throw new Error('Error al eliminar producto');
       }
       

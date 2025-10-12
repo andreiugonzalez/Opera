@@ -58,7 +58,15 @@ export const CakesProvider = ({ children }) => {
       });
     }
     const data = await resp.json();
-    if (!resp.ok) throw new Error(data.error || 'Error al actualizar torta');
+    if (!resp.ok) {
+      if (resp.status === 401) {
+        throw new Error('Sesión requerida: inicia sesión nuevamente para actualizar tortas.');
+      }
+      if (resp.status === 403) {
+        throw new Error('Permisos insuficientes: solo administradores pueden actualizar tortas.');
+      }
+      throw new Error(data.error || 'Error al actualizar torta');
+    }
     const updated = data.data;
     setCakes(prev => prev.map(c => (c.id === updated.id ? updated : c)));
     return updated;
@@ -90,7 +98,15 @@ export const CakesProvider = ({ children }) => {
       });
     }
     const data = await resp.json();
-    if (!resp.ok) throw new Error(data.error || 'Error al crear torta');
+    if (!resp.ok) {
+      if (resp.status === 401) {
+        throw new Error('Sesión requerida: inicia sesión como administrador para crear tortas.');
+      }
+      if (resp.status === 403) {
+        throw new Error('Permisos insuficientes: tu cuenta no tiene rol administrador.');
+      }
+      throw new Error(data.error || 'Error al crear torta');
+    }
     setCakes(prev => [data.data, ...prev]);
     return data.data;
   };
@@ -105,7 +121,15 @@ export const CakesProvider = ({ children }) => {
       credentials: 'include'
     });
     const data = await resp.json();
-    if (!resp.ok) throw new Error(data.error || 'Error al eliminar torta');
+    if (!resp.ok) {
+      if (resp.status === 401) {
+        throw new Error('Sesión requerida: inicia sesión para eliminar tortas.');
+      }
+      if (resp.status === 403) {
+        throw new Error('Permisos insuficientes: requiere rol administrador.');
+      }
+      throw new Error(data.error || 'Error al eliminar torta');
+    }
     setCakes(prev => prev.filter(c => c.id !== id));
   };
 

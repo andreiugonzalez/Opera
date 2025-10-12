@@ -17,20 +17,29 @@ const PORT = process.env.PORT || 3001;
 
 // Middlewares
 // CORS dinámico: permite credenciales y valida origen contra lista permitida
+const isProd = process.env.NODE_ENV === 'production';
 const allowedOrigins = [
   process.env.FRONTEND_URL,
-  'http://localhost:5173'
+  'http://localhost:5173',
+  'http://127.0.0.1:5173'
 ].filter(Boolean);
 
-const corsOptions = {
-  origin: (origin, callback) => {
-    // Permitir peticiones sin origen (Postman, curl)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    return callback(new Error(`Origen no permitido por CORS: ${origin}`));
-  },
-  credentials: true,
-};
+// En desarrollo, permitir cualquier origen para facilitar pruebas multi-dispositivo
+// En producción, restringir a FRONTEND_URL y orígenes explícitos
+const corsOptions = isProd
+  ? {
+      origin: (origin, callback) => {
+        // Permitir peticiones sin origen (Postman, curl)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) return callback(null, true);
+        return callback(new Error(`Origen no permitido por CORS: ${origin}`));
+      },
+      credentials: true,
+    }
+  : {
+      origin: true,
+      credentials: true,
+    };
 
 app.use(cors(corsOptions));
 // Responder preflight para cualquier ruta

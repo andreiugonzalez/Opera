@@ -48,21 +48,21 @@ export default function PaginaInicio({ onEnterApp }) {
 
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden">
+    <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden animate-fadeIn" style={{ animationDuration: '300ms', animationFillMode: 'both' }}>
       {/* Fondo dinámico con imágenes del carrusel */}
       <div className="absolute inset-0 z-0">
         {carouselImages.map((image, index) => (
           <div
             key={index}
             className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ${
-              index === currentImageIndex ? 'opacity-40' : 'opacity-0'
+              index === currentImageIndex ? 'opacity-70' : 'opacity-0'
             }`}
             style={{ backgroundImage: `url(${image})` }}
           />
         ))}
         {/* Overlay para mejorar legibilidad */}
-        <div className="absolute inset-0 bg-gradient-to-br from-amber-900/40 via-amber-800/30 to-amber-900/40"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/20"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-[#B78456]/15 via-[#5b2b1c]/10 to-[#B78456]/15"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-black/5"></div>
       </div>
       {/* Logo de Opera en esquina superior izquierda */}
       <div className="absolute top-6 left-6 z-20">
@@ -72,7 +72,9 @@ export default function PaginaInicio({ onEnterApp }) {
               logout();
             }
           }}
-          className={`${isAdmin() ? 'cursor-pointer hover:scale-105' : 'cursor-default'} transition-transform duration-200`}
+          onDoubleClick={() => setShowLogin(true)}
+          className={`cursor-pointer transition-transform duration-200 hover:scale-105`}
+          title="Doble clic para acceder al formulario de administrador"
         >
           <img 
             src="/imagenes/logo.ico" 
@@ -82,28 +84,20 @@ export default function PaginaInicio({ onEnterApp }) {
         </button>
       </div>
 
-      {/* Botón de Administrador en esquina */}
-      <button
-        onClick={() => setShowLogin(true)}
-        className="absolute top-6 right-6 z-20 px-4 py-2 bg-amber-500/80 hover:bg-amber-600/90 active:bg-amber-700 text-white text-sm font-medium rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl active:shadow-2xl border border-amber-400/50 backdrop-blur-sm transform hover:scale-110 active:scale-95 hover:rotate-3 active:rotate-0 animate-pulse hover:animate-none"
-      >
-        Admin
-      </button>
-
-      <div className="max-w-4xl w-full flex items-center justify-center relative z-10">
+      <div className="max-w-4xl w-full flex items-center justify-center relative z-10 animate-fadeInUp" style={{ animationDelay: '0.1s', animationDuration: '700ms', animationFillMode: 'both' }}>
         
         {/* Sección de Bienvenida y Login centrada */}
-        <div className="text-center space-y-8 bg-white/5 backdrop-blur-md rounded-2xl p-12 border border-white/10 shadow-2xl overflow-hidden max-w-2xl w-full">
-          <div className="space-y-4 overflow-hidden">
-            <h1 className="text-5xl lg:text-6xl font-bold text-white leading-tight drop-shadow-lg overflow-hidden">
-              Bienvenido a <span className="text-amber-300">Opera</span>
+        <div className="text-center space-y-8 bg-white/20 backdrop-blur-md rounded-2xl p-12 border-2 border-[#B78456]/60 shadow-2xl overflow-hidden max-w-2xl w-full animate-fadeInUp" style={{ animationDelay: '0.2s', animationDuration: '700ms', animationFillMode: 'both' }}>
+          <div className="space-y-4">
+            <h1 className="text-5xl lg:text-6xl font-extrabold text-white leading-tight drop-shadow-lg overflow-hidden animate-fadeInUp" style={{ animationDelay: '0.3s', animationDuration: '700ms', animationFillMode: 'both' }}>
+              Bienvenido a <span className="gradient-animated text-outline-elegant text-crisp">Opera</span>
             </h1>
-            <p className="text-xl text-white/90 leading-relaxed drop-shadow-md overflow-hidden">
+            <p className="text-base md:text-lg leading-relaxed font-bold tracking-wide text-[#FBDFA2] drop-shadow-[0_2px_8px_rgba(0,0,0,0.55)] text-crisp animate-fadeInUp" style={{ animationDelay: '0.4s', animationDuration: '700ms', animationFillMode: 'both', textShadow: '0 1px 0 rgba(69,34,22,0.45), 0 4px 12px rgba(0,0,0,0.45)' }}>
               Descubre la excelencia en cada detalle. Una experiencia única te espera.
             </p>
           </div>
 
-          <div className="flex justify-center overflow-hidden">
+          <div className="flex justify-center overflow-hidden animate-fadeInUp" style={{ animationDelay: '0.5s', animationDuration: '700ms', animationFillMode: 'both' }}>
              <button
                onClick={async () => {
                  await login(USER_TYPES.VIEWER);
@@ -111,7 +105,7 @@ export default function PaginaInicio({ onEnterApp }) {
                    onEnterApp();
                  }
                }}
-               className="px-12 py-6 bg-amber-500 hover:bg-amber-600 text-white text-2xl font-bold rounded-2xl transition-all duration-200 shadow-2xl hover:shadow-3xl border-2 border-amber-400/50 backdrop-blur-sm transform hover:scale-105"
+            className="px-12 py-6 bg-[#783719] hover:bg-[#5f2d14] text-white text-2xl font-bold rounded-2xl transition-all duration-200 shadow-2xl hover:shadow-3xl border-2 border-[#783719]/40 backdrop-blur-sm transform hover:scale-105"
              >
                Acceso Espectador
              </button>

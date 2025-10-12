@@ -1,4 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
+import Flatpickr from "react-flatpickr";
+import "flatpickr/dist/flatpickr.css";
+import { Spanish } from "flatpickr/dist/l10n/es.js";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useCakes } from "../contexts/CakesContext.jsx";
@@ -33,26 +37,73 @@ export default function PaginaPedido() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [newCakeName, setNewCakeName] = useState("");
   const [newCakeFile, setNewCakeFile] = useState(null);
+  const [newCakeUseDeviceImage, setNewCakeUseDeviceImage] = useState(false);
+  const [newCakeImageUrl, setNewCakeImageUrl] = useState("");
   const [newCakePrice, setNewCakePrice] = useState('');
   const [newCakePreview, setNewCakePreview] = useState("");
   const [newCakeError, setNewCakeError] = useState("");
-  const [editCakeModal, setEditCakeModal] = useState({ open: false, id: null, name: '', image_url: '' });
+  const [editCakeModal, setEditCakeModal] = useState({ open: false, id: null, name: '', image_url: '', imageFile: null, useDeviceImage: false, price: '' });
   // Filtros y orden de tortas disponibles
   const [cakeSearch, setCakeSearch] = useState('');
   const [cakeSortBy, setCakeSortBy] = useState('created_desc'); // created_desc | created_asc | name_asc | name_desc | price_asc | price_desc
 
+  // Banner informativo al entrar a "Solicitar Pedido"
+  const [bannerMounted, setBannerMounted] = useState(false);
+  const [bannerVisible, setBannerVisible] = useState(false);
+
   // Sanitización y validaciones de entradas
-  const sanitizeText = (str) => str.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñÜü' \-]/g, '').replace(/\s{2,}/g, ' ').trimStart();
+  const sanitizeText = (str) => str.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñÜü' \-]/g, '').replace(/\s{2,}/g, ' ').trimStart().slice(0, 35);
   const sanitizePhone = (str) => str.replace(/\D/g, '').slice(0, 12);
+
+  // Bloquear scroll del fondo cuando hay un modal abierto
+  useEffect(() => {
+    const anyModalOpen = showAddModal || editCakeModal.open || showPreview;
+    if (anyModalOpen) {
+      const prev = document.body.style.overflow;
+      document.body.dataset.prevOverflow = prev;
+      document.body.style.overflow = 'hidden';
+    } else {
+      const prev = document.body.dataset.prevOverflow || '';
+      document.body.style.overflow = prev;
+      delete document.body.dataset.prevOverflow;
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showAddModal, editCakeModal.open, showPreview]);
+
+  // Mostrar banner solo para espectadores (no admin) por ~7 segundos con suave animación
+  useEffect(() => {
+    if (isAdmin && isAdmin()) {
+      // No mostrar a administradores
+      setBannerMounted(false);
+      setBannerVisible(false);
+      return;
+    }
+    setBannerMounted(true);
+    setBannerVisible(false);
+    const showTimer = setTimeout(() => setBannerVisible(true), 60);
+    const hideTimer = setTimeout(() => setBannerVisible(false), 7000);
+    const unmountTimer = setTimeout(() => setBannerMounted(false), 7700);
+    return () => {
+      clearTimeout(showTimer);
+      clearTimeout(hideTimer);
+      clearTimeout(unmountTimer);
+    };
+  }, [isAdmin]);
 
   const handleNombreCompletoChange = (e) => {
     const value = sanitizeText(e.target.value);
     setNombreCompleto(value);
+    const msg = value.length < 2 ? 'Debe contener al menos 2 caracteres' : '';
+    e.target.setCustomValidity(msg);
   };
 
   const handleANombreDeChange = (e) => {
     const value = sanitizeText(e.target.value);
     setANombreDe(value);
+    const msg = value.length < 2 ? 'Debe contener al menos 2 caracteres' : '';
+    e.target.setCustomValidity(msg);
   };
 
   const handleTelefonoChange = (e) => {
@@ -82,10 +133,27 @@ export default function PaginaPedido() {
 
   useEffect(() => {
     if (transitionDir) {
-      const t = setTimeout(() => setTransitionDir(null), 350);
+      const t = setTimeout(() => setTransitionDir(null), 850);
       return () => clearTimeout(t);
     }
   }, [selectedIndex, transitionDir]);
+
+  // Precargar imágenes vecinas para transiciones fluidas
+  useEffect(() => {
+    if (!items.length) return;
+    const nextIdx = (selectedIndex + 1) % items.length;
+    const prevIdx = (selectedIndex - 1 + items.length) % items.length;
+    const nextSrc = items[nextIdx]?.src;
+    const prevSrc = items[prevIdx]?.src;
+    if (nextSrc) {
+      const imgNext = new Image();
+      imgNext.src = nextSrc;
+    }
+    if (prevSrc) {
+      const imgPrev = new Image();
+      imgPrev.src = prevSrc;
+    }
+  }, [selectedIndex, items]);
 
   const whatsappNumber = "56986193142"; // Número real actualizado
 
@@ -95,6 +163,8 @@ export default function PaginaPedido() {
   const openAddModal = () => {
     setNewCakeName("");
     setNewCakeFile(null);
+    setNewCakeUseDeviceImage(false);
+    setNewCakeImageUrl("");
     setNewCakePreview("");
     setNewCakeError("");
     setNewCakePrice('');
@@ -112,6 +182,12 @@ export default function PaginaPedido() {
     } else {
       setNewCakePreview("");
     }
+  };
+
+  const handleNewCakeImageUrlChange = (e) => {
+    const value = e.target.value;
+    setNewCakeImageUrl(value);
+    setNewCakePreview(value || "");
   };
 
   // Mapear tortas cargadas desde la API al carrusel
@@ -155,29 +231,30 @@ export default function PaginaPedido() {
   // Editar torta (solo admin)
   const openEditCake = (cake) => {
     // Si no tiene id, permitimos crear una torta administrada con los datos base
-    setEditCakeModal({ open: true, id: cake.id || null, name: cake.title || cake.name || '', image_url: cake.src || cake.image_url || '', price: cake.price ? formatChileanPrice(cake.price) : '' });
+    setEditCakeModal({ open: true, id: cake.id || null, name: cake.title || cake.name || '', image_url: cake.src || cake.image_url || '', imageFile: null, useDeviceImage: false, price: cake.price ? formatChileanPrice(cake.price) : '' });
   };
-  const closeEditCake = () => setEditCakeModal({ open: false, id: null, name: '', image_url: '', price: '' });
+  const closeEditCake = () => setEditCakeModal({ open: false, id: null, name: '', image_url: '', imageFile: null, useDeviceImage: false, price: '' });
   const handleEditCakeSubmit = async (e) => {
     e.preventDefault();
     try {
-      const nameTrim = (editCakeModal.name || '').trim();
+      const nameTrim = (editCakeModal.name || '').slice(0, 35).trim();
       if (!nameTrim) return;
       const payload = { name: nameTrim };
       // Validar y normalizar precio
       if (editCakeModal.price !== undefined) {
-        const normalized = parseChileanPrice(sanitizePriceDigits(editCakeModal.price));
+        const normalized = parseChileanPrice(sanitizePriceDigits(editCakeModal.price).slice(0, 15));
         if (!normalized || normalized <= 0) {
           alert('El precio debe ser un número mayor a 0');
           return;
         }
         payload.price = normalized;
       }
-      // Si el usuario seleccionó un archivo en el input de edición, adjuntarlo
-      if (editCakeModal.imageFile) {
-        payload.imageFile = editCakeModal.imageFile;
+      // Imagen: según selección de fuente
+      if (editCakeModal.useDeviceImage) {
+        if (editCakeModal.imageFile) {
+          payload.imageFile = editCakeModal.imageFile;
+        }
       } else if (editCakeModal.image_url && /^https?:\/\//.test(editCakeModal.image_url)) {
-        // Permitir actualizar image_url si es una URL válida (fallback)
         payload.image_url = editCakeModal.image_url;
       }
       if (editCakeModal.id) {
@@ -204,23 +281,34 @@ export default function PaginaPedido() {
   const handleAddCakeSubmit = async (e) => {
     e.preventDefault();
     setNewCakeError("");
-    const nameTrim = newCakeName.trim();
+    const nameTrim = newCakeName.slice(0, 35).trim();
     if (nameTrim.length < 2) {
       setNewCakeError("El nombre debe tener al menos 2 caracteres.");
       return;
     }
-    if (!newCakeFile) {
-      setNewCakeError("Debes seleccionar una imagen desde tus archivos.");
-      return;
+    // Validación de imagen según selección
+    if (newCakeUseDeviceImage) {
+      if (!newCakeFile) {
+        setNewCakeError("Debes seleccionar una imagen desde tus archivos.");
+        return;
+      }
+    } else {
+      if (!newCakeImageUrl || !/^https?:\/\//.test(newCakeImageUrl)) {
+        setNewCakeError("Debes ingresar una URL de imagen válida (http/https).");
+        return;
+      }
     }
     try {
       // Validar precio
-      const normalized = parseChileanPrice(sanitizePriceDigits(newCakePrice));
+      const normalized = parseChileanPrice(sanitizePriceDigits(newCakePrice).slice(0, 15));
       if (!normalized || normalized <= 0) {
         setNewCakeError('El precio es requerido y debe ser mayor a 0');
         return;
       }
-      await addCake({ name: nameTrim, imageFile: newCakeFile, price: normalized });
+      const payload = newCakeUseDeviceImage
+        ? { name: nameTrim, imageFile: newCakeFile, price: normalized }
+        : { name: nameTrim, image_url: newCakeImageUrl, price: normalized };
+      await addCake(payload);
       closeAddModal();
     } catch (err) {
       console.error('Error creando torta:', err);
@@ -274,6 +362,14 @@ export default function PaginaPedido() {
       try {
         const [y, m, d] = dateStr.split('-').map(Number);
         const dt = new Date(y, m - 1, d, 17, 0);
+        // Regla: mínimo 3 días de anticipación respecto a hoy (fecha local)
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        const minDate = new Date(today);
+        minDate.setDate(today.getDate() + 3);
+        if (dt < minDate) {
+          errorMsg = 'Debes solicitar con al menos 3 días de anticipación';
+        }
         if (isWeekend(dt)) errorMsg = 'Solo se atiende de lunes a viernes';
         else if (isHoliday(dt)) errorMsg = 'El día seleccionado es feriado';
       } catch {
@@ -366,13 +462,9 @@ export default function PaginaPedido() {
   };
 
   const handleGeneratePdfAndOpenWhatsApp = async () => {
-    // Ahora el flujo es solo texto con formato elegante
-    if (!pickupAck) {
-      alert('Debes reconocer que retirarás la torta en el local');
-      return;
-    }
-    if (!depositAck) {
-      alert('Debes reconocer realizar abono del pedido');
+    // Validaciones de casillas ya están con required y mensajes, reforzamos aquí también
+    if (!pickupAck || !depositAck) {
+      alert('Debes seleccionar ambas casillas de reconocimiento para continuar');
       return;
     }
     try {
@@ -396,16 +488,45 @@ export default function PaginaPedido() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 p-4 sm:p-6 lg:p-8 overflow-x-hidden font-serif relative">
+    <div
+      className="w-full min-h-screen p-4 sm:p-6 lg:p-8 overflow-x-hidden font-serif relative appear-page"
+      style={{ backgroundColor: '#B78456' }}
+    >
       {/* Indicador Admin con botón flotante de logout */}
       <AdminIndicator />
-      <h1 className="text-5xl font-extrabold text-amber-700 mb-10 text-center">
+      {/* Mensaje “adjuntar imagen de referencia” comentado temporalmente por solicitud.
+      {bannerMounted && createPortal((
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center pointer-events-none">
+          <div className={`pointer-events-none transition-all duration-500 ease-out ${bannerVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2'}`}>
+            <div className="flex items-center gap-3 rounded-xl border-2 shadow-2xl px-5 py-4 max-w-3xl"
+                 style={{ backgroundImage: 'linear-gradient(90deg, #783719 0%, #B78456 100%)', borderColor: '#E3C08C' }}>
+              <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#FBDFA2]/20 border border-[#E3C08C]">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} style={{ color: '#F8EDD6' }}>
+                  <rect x="3" y="5" width="18" height="14" rx="2" ry="2" />
+                  <circle cx="8" cy="10" r="2" />
+                  <path d="M21 15l-6-6-4 4-2-2-6 6" />
+                </svg>
+              </span>
+              <p className="text-sm md:text-base leading-snug font-semibold" style={{ color: '#F8EDD6' }}>
+                ¿Tienes una imagen de referencia de la torta? Al finalizar el formulario, adjúntala por WhatsApp para que podamos interpretar mejor tu idea.
+              </p>
+              <span className="ml-auto hidden sm:inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#FBDFA2]/20 border border-[#E3C08C]">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} style={{ color: '#F8EDD6' }}>
+                  <path d="M16.72 5.84A10.44 10.44 0 0 0 12 5.5C7.58 5.5 4 9.08 4 13.5c0 1.35.34 2.63.93 3.75L4 22l4.88-.93A8.47 8.47 0 0 0 12 21.5c4.42 0 8-3.58 8-8 0-1.99-.72-3.82-1.92-5.21" />
+                </svg>
+              </span>
+            </div>
+          </div>
+        </div>
+      ), document.body)}
+      */}
+      <h1 className="text-5xl font-extrabold mb-10 text-center underline-elegant" style={{ color: '#F8EDD6' }}>
         Solicitar Pedido
       </h1>
 
       {/* Paso 1: Carrusel seleccionable */}
       {step === 1 && (
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           {/* Botones superiores: Volver, Añadir (admin) y Ver tortas disponibles */}
           <div className="flex flex-col sm:flex-row items-center gap-2 justify-end mb-4 md:absolute md:top-6 md:right-6">
             {isAdmin() && (
@@ -437,15 +558,21 @@ export default function PaginaPedido() {
               </button>
             )}
           </div>
-          {/* Botón Volver coherente con otras secciones */}
+          {/* Botón Volver con estilo circular y brillo 783719 */}
           <button
-            onClick={() => navigate("/")}
-            className="absolute top-6 left-2 p-2 rounded-full bg-amber-600 text-white hover:bg-amber-700 transition-colors shadow-md"
+            onClick={() => {
+              if (step === 2) {
+                setStep(1);
+              } else {
+                navigate("/");
+              }
+            }}
+            className="fixed top-4 sm:top-6 left-2 sm:left-6 z-50 btn-back-783719 btn-sheen"
             aria-label="Volver a inicio"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
+              className="h-6 w-6 text-white"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -454,15 +581,17 @@ export default function PaginaPedido() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <div className="relative w-full rounded-2xl shadow-xl bg-white overflow-hidden">
+          <div className="relative w-full rounded-2xl shadow-2xl overflow-hidden"
+               style={{ backgroundColor: '#452216', boxShadow: '0 20px 40px rgba(0,0,0,0.35)' }}>
             <div className="grid grid-cols-1 md:grid-cols-2">
               {/* Panel de texto a la izquierda */}
               <div className="order-2 md:order-1 p-6 md:p-8 flex flex-col justify-center items-center text-center">
-                <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-800 via-amber-600 to-amber-400 drop-shadow-sm leading-tight mb-2">
+                <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white leading-tight mb-4 px-4 py-2 rounded-lg"
+                    style={{ backgroundColor: '#783719', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25), 0 8px 16px rgba(0,0,0,0.35)', letterSpacing: '0.5px' }}>
                   {selectedTitle}
                 </h2>
-                <div className="h-[3px] w-24 md:w-28 bg-amber-500 rounded-full mb-2"></div>
-                <p className="mt-2 text-amber-800 text-base md:text-lg bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 shadow-sm max-w-md">
+                <div className="h-[3px] w-24 md:w-28 bg-amber-300 rounded-full mb-2"></div>
+                <p className="mt-2 text-amber-50 text-base md:text-lg bg-[#452216]/80 border border-[#783719] rounded-lg px-4 py-3 shadow-sm max-w-md">
                   Elige tu torta favorita. Las etiquetas <span className="font-semibold">3p, 4p</span>, etc., indican la cantidad <span className="font-semibold">aproximada de porciones por persona</span>.
                 </p>
                 <div className="mt-6 flex gap-3 justify-center">
@@ -470,7 +599,7 @@ export default function PaginaPedido() {
                     type="button"
                     aria-label="Anterior"
                     onClick={() => { setTransitionDir('prev'); setSelectedIndex((prev) => (prev - 1 + items.length) % items.length); }}
-                    className="px-4 py-2 bg-neutral-200 hover:bg-neutral-300 text-neutral-900 rounded-lg font-semibold"
+                    className="px-4 py-2 rounded-full font-semibold bg-[#783719] text-white hover:bg-[#783719]/90 shadow-md btn-sheen"
                   >
                     ◀ Anterior
                   </button>
@@ -478,7 +607,7 @@ export default function PaginaPedido() {
                     type="button"
                     aria-label="Siguiente"
                     onClick={() => { setTransitionDir('next'); setSelectedIndex((prev) => (prev + 1) % items.length); }}
-                    className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-semibold"
+                    className="px-4 py-2 rounded-full font-semibold bg-amber-600 text-white hover:bg-amber-700 shadow-md btn-sheen"
                   >
                     Siguiente ▶
                   </button>
@@ -486,16 +615,18 @@ export default function PaginaPedido() {
               </div>
 
               {/* Imagen a la derecha */}
-              <div className="order-1 md:order-2 relative bg-neutral-100 flex items-center justify-center p-4 md:p-6">
-                <div className="w-full h-[260px] sm:h-[300px] md:w-[640px] md:h-[430px] rounded-xl overflow-hidden flex items-center justify-center">
+              <div className="order-1 md:order-2 relative flex items-center justify-center p-4 md:p-6"
+                   style={{ backgroundColor: '#452216' }}>
+                <div className="w-full h-[260px] sm:h-[300px] md:w-[640px] md:h-[430px] rounded-xl overflow-hidden flex items-center justify-center border border-[#783719]/40 shadow-lg">
                   <img
+                    key={`${selectedIndex}-${transitionDir || 'zoom'}`}
                     src={selectedImage}
                     alt={selectedTitle}
                     className={`w-full h-full object-contain md:object-cover will-change-transform ${transitionDir === 'next' ? 'elegant-slide-next' : transitionDir === 'prev' ? 'elegant-slide-prev' : 'elegant-zoom-in'}`}
                   />
                 </div>
                 {items[selectedIndex]?.price !== undefined && (
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-amber-600 text-white px-4 py-2 rounded-full shadow-lg text-sm md:text-base font-semibold">
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-[#783719] text-white px-4 py-2 rounded-full shadow-lg text-sm md:text-base font-semibold border border-amber-300/30">
                     ${formatChileanPrice(items[selectedIndex].price)}
                   </div>
                 )}
@@ -505,27 +636,27 @@ export default function PaginaPedido() {
               {items.map((_, idx) => (
                 <span
                   key={idx}
-                  className={`w-2.5 h-2.5 rounded-full inline-block ${selectedIndex === idx ? 'bg-amber-600' : 'bg-neutral-300'}`}
+                  className={`w-2.5 h-2.5 rounded-full inline-block ${selectedIndex === idx ? 'bg-amber-300' : 'bg-neutral-600'}`}
                 />
               ))}
             </div>
           </div>
           <div className="flex justify-center mt-6">
-            <button onClick={() => setStep(2)} className="px-8 py-3 bg-amber-600 text-white rounded-lg font-semibold hover:bg-amber-700 transition-all shadow-md">
+            <button onClick={() => setStep(2)} className="px-8 py-3 rounded-full font-semibold bg-[#783719] text-white hover:bg-[#783719]/90 transition-all shadow-md btn-sheen border border-amber-300/30">
               Continuar
             </button>
           </div>
           {/* Tabla de tortas disponibles (colapsable) */}
           {showCakesTable && (
-            <div className="mt-10 bg-white rounded-xl shadow-lg p-6">
+            <div className="mt-10 rounded-xl shadow-lg p-6 bg-[#783719] text-[#FBDFA2] border border-[#B78456]/40">
               <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-4">
                 <div>
-                  <h3 className="text-2xl font-bold text-amber-800">Tortas disponibles</h3>
-                  <p className="text-sm text-neutral-600">Busca y ordena para encontrar rápido tu torta ideal.</p>
+                  <h3 className="text-2xl font-bold" style={{ color: '#F8EDD6' }}>Tortas disponibles</h3>
+                  <p className="text-sm" style={{ color: '#FBDFA2' }}>Busca y ordena para encontrar rápido tu torta ideal.</p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
                   <div className="w-full sm:w-[280px] md:w-[320px]">
-                    <label htmlFor="cakeSearch" className="block text-xs font-semibold text-amber-900">Buscar por nombre</label>
+                    <label htmlFor="cakeSearch" className="block text-xs font-semibold" style={{ color: '#FBDFA2' }}>Buscar por nombre</label>
                     <div className="relative mt-1">
                       <input
                         id="cakeSearch"
@@ -533,9 +664,9 @@ export default function PaginaPedido() {
                         value={cakeSearch}
                         onChange={(e) => setCakeSearch(e.target.value)}
                         placeholder="Ej: chocolate, frutas"
-                        className="w-full pl-10 pr-3 py-2 rounded-lg border-2 border-amber-300 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-600 bg-amber-50/50"
+                        className="w-full pl-10 pr-3 py-2 rounded-lg border-2 border-[#B78456] focus:outline-none focus:border-[#B78456] focus:ring-2 focus:ring-[#B78456] bg-[#FBDFA2]/10 text-[#FBDFA2] placeholder-[#FBDFA2]/70"
                       />
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-700">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#B78456' }}>
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                           <circle cx="11" cy="11" r="7" />
                           <path d="M21 21l-4.3-4.3" />
@@ -544,12 +675,12 @@ export default function PaginaPedido() {
                     </div>
                   </div>
                   <div className="w-full sm:w-[220px] md:w-[240px]">
-                    <label htmlFor="cakeSortBy" className="block text-xs font-semibold text-amber-900">Ordenar por</label>
+                    <label htmlFor="cakeSortBy" className="block text-xs font-semibold" style={{ color: '#FBDFA2' }}>Ordenar por</label>
                     <select
                       id="cakeSortBy"
                       value={cakeSortBy}
                       onChange={(e) => setCakeSortBy(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border-2 border-amber-300 bg-amber-50/50 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-600 text-amber-900"
+                      className="w-full px-3 py-2 rounded-lg border-2 border-[#B78456] bg-[#FBDFA2]/10 focus:outline-none focus:border-[#B78456] focus:ring-2 focus:ring-[#B78456] text-[#FBDFA2]"
                     >
                       <option value="created_desc">Más reciente</option>
                       <option value="created_asc">Más antiguo</option>
@@ -562,65 +693,67 @@ export default function PaginaPedido() {
                 </div>
               </div>
               {cakesError && (
-                <p className="text-red-600 mb-2">{cakesError}</p>
+                <p className="mb-2" style={{ color: '#FBDFA2' }}>{cakesError}</p>
               )}
               <div className="overflow-x-auto sm:overflow-x-visible">
-                <table className="min-w-[640px] sm:min-w-full divide-y divide-amber-200">
-                  <thead className="bg-amber-50">
+                <table className="min-w-[640px] sm:min-w-full divide-y divide-[#B78456]/40">
+                  <thead className="bg-[#B78456]/30">
                     <tr>
-                      <th className="px-4 py-2 text-left text-sm font-semibold text-amber-900">Foto</th>
-                      <th className="px-4 py-2 text-left text-sm font-semibold text-amber-900">Nombre</th>
-                      <th className="px-4 py-2 text-left text-sm font-semibold text-amber-900 hidden sm:table-cell">Precio</th>
+                      <th className="px-4 py-2 text-left text-sm font-semibold" style={{ color: '#FBDFA2' }}>Foto</th>
+                      <th className="px-4 py-2 text-left text-sm font-semibold" style={{ color: '#FBDFA2' }}>Nombre</th>
+                      <th className="px-4 py-2 text-left text-sm font-semibold hidden sm:table-cell" style={{ color: '#FBDFA2' }}>Precio</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-amber-100">
+                  <tbody className="divide-y divide-[#B78456]/20">
                     {filteredSortedCakes.map((item, idx) => (
-                      <tr key={item.id || idx} className="hover:bg-amber-50/60">
+                      <tr key={item.id || idx} className="bg-[#783719]/85 hover:bg-[#B78456]/15 transition-colors">
                         <td className="px-4 py-3">
-                          <div className="w-[150px] h-[100px] bg-neutral-100 rounded-lg overflow-hidden border border-amber-200">
+                          <div className="w-[150px] h-[100px] bg-[#452216]/40 rounded-lg overflow-hidden border border-[#B78456]/40">
                             <img src={item.src} alt={item.title} className="w-full h-full object-cover" />
                           </div>
                         </td>
                         <td className="px-4 py-3">
-                          <span className="text-neutral-900 font-medium">{item.title}</span>
-                          {isAdmin() && (
-                            <div className="mt-2 flex gap-2">
-                            <button
-                              type="button"
-                              onClick={() => openEditCake(item)}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md bg-gradient-to-r from-amber-700 via-amber-600 to-amber-500 text-white font-semibold shadow-sm hover:shadow-md hover:brightness-105 transition-all focus:outline-none focus:ring-2 focus:ring-amber-300 active:scale-[0.98]"
-                              title="Editar torta"
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M11 4H7a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4" />
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M18.5 2.5a2.121 2.121 0 113 3L12 14l-4 1 1-4 9.5-8.5z" />
-                              </svg>
-                              Editar
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => item.id ? handleDeleteCake(item.id) : alert('Primero debes convertir esta torta base en administrada. Usa "Editar" para guardarla en la base de datos.')}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md bg-gradient-to-r from-red-700 via-red-600 to-red-500 text-white font-semibold shadow-sm hover:shadow-md hover:brightness-105 transition-all focus:outline-none focus:ring-2 focus:ring-red-300 active:scale-[0.98]"
-                              title="Eliminar torta"
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4m-6 4v12m6-12v12" />
-                              </svg>
-                              Eliminar
-                            </button>
+                          <div className="flex items-center gap-3">
+                            <span className="font-extrabold text-base sm:text-lg tracking-wide drop-shadow-sm" style={{ color: '#F8EDD6' }}>{item.title}</span>
+                            {isAdmin() && (
+                              <div className="flex gap-2 ml-auto">
+                                <button
+                                  type="button"
+                                  onClick={() => openEditCake(item)}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md bg-[#B78456] text-[#452216] font-semibold shadow-sm hover:bg-[#B78456]/90 transition-all focus:outline-none focus:ring-2 focus:ring-[#FBDFA2] active:scale-[0.98] btn-sheen"
+                                  title="Editar torta"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M11 4H7a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M18.5 2.5a2.121 2.121 0 113 3L12 14l-4 1 1-4 9.5-8.5z" />
+                                  </svg>
+                                  Editar
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => item.id ? handleDeleteCake(item.id) : alert('Primero debes convertir esta torta base en administrada. Usa "Editar" para guardarla en la base de datos.')}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md bg-amber-600 text-white font-semibold shadow-sm hover:bg-amber-700 transition-all focus:outline-none focus:ring-2 focus:ring-[#FBDFA2] active:scale-[0.98] btn-sheen"
+                                  title="Eliminar torta"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4m-6 4v12m6-12v12" />
+                                  </svg>
+                                  Eliminar
+                                </button>
+                              </div>
+                            )}
                           </div>
-                        )}
-                        {/* Precio en móvil, debajo de los botones */}
-                        <p className="mt-2 text-neutral-900 font-semibold sm:hidden">${formatChileanPrice(item.price)}</p>
-                      </td>
-                      <td className="px-4 py-3 text-neutral-900 font-semibold hidden sm:table-cell">${formatChileanPrice(item.price)}</td>
+                          {/* Precio en móvil, debajo del nombre */}
+                          <p className="mt-2 font-semibold sm:hidden" style={{ color: '#FBDFA2' }}>${formatChileanPrice(item.price)}</p>
+                        </td>
+                      <td className="px-4 py-3 font-semibold hidden sm:table-cell" style={{ color: '#FBDFA2' }}>${formatChileanPrice(item.price)}</td>
                     </tr>
                   ))}
                   </tbody>
                 </table>
               </div>
               {cakesLoading && (
-                <p className="mt-3 text-sm text-neutral-600">Cargando tortas...</p>
+                <p className="mt-3 text-sm" style={{ color: '#FBDFA2' }}>Cargando tortas...</p>
               )}
             </div>
           )}
@@ -628,22 +761,26 @@ export default function PaginaPedido() {
       )}
 
       {/* Modal editar torta (solo admin) */}
-  {editCakeModal.open && isAdmin() && (
+  {editCakeModal.open && isAdmin() && createPortal((
         <div
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center"
+          className="fixed inset-0 z-[1000] bg-black/60 backdrop-blur-sm flex items-center justify-center"
           role="dialog"
           aria-modal="true"
           onClick={closeEditCake}
         >
           <div
-            className="relative w-[92vw] max-w-[600px] bg-white rounded-xl shadow-2xl p-6"
+            className="relative w-[92vw] max-w-[720px] rounded-xl shadow-2xl p-6 border-2"
+            style={{ backgroundColor: '#783719', borderColor: '#B78456' }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between mb-4">
-              <h3 className="text-2xl font-extrabold text-amber-800">Editar torta</h3>
+              <h3 className="text-2xl font-extrabold" style={{ color: '#F8EDD6' }}>Editar torta</h3>
               <button
                 type="button"
-                className="px-3 py-1.5 rounded-md bg-neutral-200 text-neutral-900 hover:bg-neutral-300"
+                className="px-3 py-1.5 rounded-md font-semibold focus:outline-none focus:ring-2"
+                style={{ backgroundColor: '#B78456', color: '#452216' }}
+                onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#b78456e6'; }}
+                onMouseOut={(e) => { e.currentTarget.style.backgroundColor = '#B78456'; }}
                 onClick={closeEditCake}
                 aria-label="Cerrar"
               >
@@ -651,67 +788,121 @@ export default function PaginaPedido() {
               </button>
             </div>
 
-            <form onSubmit={handleEditCakeSubmit} className="grid grid-cols-1 gap-6">
+            <form onSubmit={handleEditCakeSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label htmlFor="editCakeName" className="block text-sm font-semibold text-amber-900 tracking-wide">Nombre de la torta</label>
-                <div className="h-[2px] w-24 bg-amber-500 rounded-full mb-2"></div>
+                <label htmlFor="editCakeName" className="block text-sm font-semibold tracking-wide" style={{ color: '#FBDFA2' }}>Nombre de la torta</label>
+                <div className="h-[2px] w-24 rounded-full mb-2" style={{ backgroundColor: '#B78456' }}></div>
                 <input
                   id="editCakeName"
                   type="text"
-                  className="w-full p-3 rounded-lg border-2 border-amber-300 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-600 bg-amber-50/50"
+                  className="w-full p-3 rounded-lg border-2 focus:outline-none focus:ring-2"
+                  style={{ borderColor: '#B78456', backgroundColor: '#FBDFA2' + '1A', color: '#F8EDD6' }}
                   value={editCakeModal.name}
-                  onChange={(e) => setEditCakeModal(m => ({ ...m, name: e.target.value }))}
+                  onChange={(e) => setEditCakeModal(m => ({ ...m, name: e.target.value.slice(0, 35) }))}
+                  maxLength={35}
                   minLength={2}
                   required
                 />
+                <p className="mt-2 text-xs" style={{ color: '#FBDFA2' }}>Máximo 35 caracteres.</p>
               </div>
 
               <div>
-                <label htmlFor="editCakePrice" className="block text-sm font-semibold text-amber-900 tracking-wide">Precio</label>
-                <div className="h-[2px] w-24 bg-amber-500 rounded-full mb-2"></div>
+                <label htmlFor="editCakePrice" className="block text-sm font-semibold tracking-wide" style={{ color: '#FBDFA2' }}>Precio</label>
+                <div className="h-[2px] w-24 rounded-full mb-2" style={{ backgroundColor: '#B78456' }}></div>
                 <input
                   id="editCakePrice"
                   type="text"
                   inputMode="numeric"
-                  className="w-full p-3 rounded-lg border-2 border-amber-300 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-600 bg-amber-50/50"
+                  className="w-full p-3 rounded-lg border-2 focus:outline-none focus:ring-2"
+                  style={{ borderColor: '#B78456', backgroundColor: '#FBDFA2' + '1A', color: '#F8EDD6' }}
                   value={editCakeModal.price}
-                  onChange={(e) => setEditCakeModal(m => ({ ...m, price: sanitizePriceDigits(e.target.value) }))}
-                  onBlur={(e) => setEditCakeModal(m => ({ ...m, price: formatChileanPrice(sanitizePriceDigits(e.target.value)) }))}
-                  onFocus={(e) => setEditCakeModal(m => ({ ...m, price: sanitizePriceDigits(e.target.value) }))}
+                  onChange={(e) => setEditCakeModal(m => ({ ...m, price: sanitizePriceDigits(e.target.value).slice(0, 15) }))}
+                  onBlur={(e) => setEditCakeModal(m => ({ ...m, price: formatChileanPrice(sanitizePriceDigits(e.target.value).slice(0, 15)) }))}
+                  onFocus={(e) => setEditCakeModal(m => ({ ...m, price: sanitizePriceDigits(e.target.value).slice(0, 15) }))}
+                  maxLength={15}
                   placeholder="Ej: 24990"
                   required
                 />
-                <p className="mt-2 text-xs text-neutral-600">Ingresa el precio en pesos chilenos.</p>
+                <p className="mt-2 text-xs" style={{ color: '#FBDFA2' }}>Ingresa el precio en pesos chilenos. Máximo 15 dígitos.</p>
               </div>
 
-              <div>
-                <label htmlFor="editCakeImageFile" className="block text-sm font-semibold text-amber-900 tracking-wide">Imagen </label>
-                <div className="h-[2px] w-24 bg-amber-500 rounded-full mb-2"></div>
-                <input
-                  id="editCakeImageFile"
-                  type="file"
-                  accept="image/*"
-                  className="w-full p-3 rounded-lg border-2 border-amber-300 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-600 bg-amber-50/50"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0] || null;
-                    setEditCakeModal(m => ({ ...m, imageFile: file }));
-                  }}
-                />
-                <p className="mt-2 text-xs text-neutral-600">Si no seleccionas archivo, se mantiene la imagen actual.</p>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-semibold tracking-wide" style={{ color: '#FBDFA2' }}>Imagen de la torta</label>
+                <div className="h-[2px] w-24 rounded-full mb-2" style={{ backgroundColor: '#B78456' }}></div>
+                <div className="mb-3 flex gap-6 text-sm" style={{ color: '#FBDFA2' }}>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="editCakeImageSource"
+                      checked={!editCakeModal.useDeviceImage}
+                      onChange={() => setEditCakeModal(m => ({ ...m, useDeviceImage: false }))}
+                      className="accent-amber-700"
+                    />
+                    URL de imagen
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="editCakeImageSource"
+                      checked={editCakeModal.useDeviceImage}
+                      onChange={() => setEditCakeModal(m => ({ ...m, useDeviceImage: true }))}
+                      className="accent-amber-700"
+                    />
+                    Subir desde dispositivo
+                  </label>
+                </div>
+                {!editCakeModal.useDeviceImage ? (
+                  <div>
+                    <input
+                      type="text"
+                      className="w-full p-3 rounded-lg border-2 focus:outline-none focus:ring-2"
+                      style={{ borderColor: '#B78456', backgroundColor: '#FBDFA2' + '1A', color: '#F8EDD6' }}
+                      placeholder="https://..."
+                      value={editCakeModal.image_url || ''}
+                      onChange={(e) => setEditCakeModal(m => ({ ...m, image_url: e.target.value }))}
+                    />
+                    {editCakeModal.image_url ? (
+                      <div className="mt-2 w-full h-[160px] rounded-lg overflow-hidden border" style={{ borderColor: '#B78456', backgroundColor: '#452216' + '66' }}>
+                        <img src={editCakeModal.image_url} alt="Vista previa" className="w-full h-full object-cover" onError={(ev) => { ev.currentTarget.style.display = 'none'; }} />
+                      </div>
+                    ) : null}
+                  </div>
+                ) : (
+                  <div>
+                    <input
+                      id="editCakeImageFile"
+                      type="file"
+                      accept="image/*"
+                      className="w-full p-3 rounded-lg border-2 focus:outline-none focus:ring-2"
+                      style={{ borderColor: '#B78456', backgroundColor: '#FBDFA2' + '1A', color: '#F8EDD6' }}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0] || null;
+                        setEditCakeModal(m => ({ ...m, imageFile: file }));
+                      }}
+                    />
+                    {editCakeModal.imageFile ? (
+                      <div className="mt-2 w-full h-[160px] rounded-lg overflow-hidden border" style={{ borderColor: '#B78456', backgroundColor: '#452216' + '66' }}>
+                        <img src={URL.createObjectURL(editCakeModal.imageFile)} alt="Vista previa" className="w-full h-full object-cover" />
+                      </div>
+                    ) : null}
+                    <p className="mt-2 text-xs" style={{ color: '#FBDFA2' }}>Si no seleccionas archivo, se mantiene la imagen actual.</p>
+                  </div>
+                )}
               </div>
 
-              <div className="flex gap-3 justify-end">
-                <button type="button" onClick={closeEditCake} className="px-5 py-2.5 bg-neutral-200 text-neutral-900 rounded-lg font-semibold hover:bg-neutral-300">Cancelar</button>
-                <button type="submit" className="px-5 py-2.5 bg-amber-600 text-white rounded-lg font-semibold hover:bg-amber-700">Guardar</button>
+              <div className="md:col-span-2 flex gap-3 justify-end">
+                <button type="button" onClick={closeEditCake} className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-lg font-semibold transition-all focus:outline-none focus:ring-2" style={{ backgroundColor: '#B78456', color: '#452216' }}>Cancelar</button>
+                <button type="submit" className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-lg font-semibold shadow-sm transition-all focus:outline-none focus:ring-2" style={{ backgroundColor: '#783719', color: '#F8EDD6' }}>Guardar</button>
               </div>
             </form>
           </div>
         </div>
-      )}
+      ), document.body)}
 
       {/* Paso 2: Formulario */}
       {step === 2 && (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-6 max-w-xl mx-auto bg-white/95 backdrop-blur-sm p-6 rounded-xl shadow-lg">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-6 max-w-xl mx-auto rounded-xl shadow-xl border-2 p-6 relative float-subtle"
+          style={{ backgroundImage: 'linear-gradient(180deg, #8B5E3C 0%, #6E3A22 100%)', borderColor: '#B78456', boxShadow: '0 12px 28px rgba(0,0,0,0.35)' }}>
           <div className="flex items-center justify-center gap-4 text-center">
             <img
               src={selectedImage}
@@ -720,43 +911,46 @@ export default function PaginaPedido() {
               onClick={openPreview}
             />
             <div>
-              <p className="text-sm text-neutral-700">Torta seleccionada</p>
-              <p className="text-neutral-900 font-semibold break-all">{selectedTitle}</p>
+              <p className="text-sm" style={{ color: '#FBDFA2' }}>Torta seleccionada</p>
+              <p className="font-semibold break-all" style={{ color: '#F8EDD6' }}>{selectedTitle}</p>
               {selectedPrice ? (
-                <p className="text-amber-800 font-semibold">${formatChileanPrice(selectedPrice)}</p>
+                <p className="font-semibold" style={{ color: '#FBDFA2' }}>${formatChileanPrice(selectedPrice)}</p>
               ) : null}
             </div>
           </div>
 
           {/* Nombre completo */}
           <div className="group">
-            <label htmlFor="nombreCompleto" className="block text-sm font-semibold text-amber-900 tracking-wide">
+            <label htmlFor="nombreCompleto" className="block text-sm font-semibold tracking-wide" style={{ color: '#F8EDD6' }}>
               Nombre completo
             </label>
-            <div className="h-[2px] w-16 bg-amber-500 rounded-full mb-2"></div>
+            <div className="h-[2px] w-16 rounded-full mb-2" style={{ backgroundColor: '#E3C08C' }}></div>
             <input
               id="nombreCompleto"
               type="text"
-              className="w-full p-3 rounded-lg border-2 border-amber-300 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-600 bg-amber-50/50"
+              maxLength={35}
+              className="w-full p-3 rounded-lg border focus:outline-none focus:ring-2"
+              style={{ borderColor: '#E3C08C', backgroundColor: '#F8EDD6' + '14', color: '#F8EDD6' }}
               value={nombreCompleto}
               onChange={handleNombreCompletoChange}
               pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñÜü' \-]{2,}$"
-              title="Solo letras, espacios, apóstrofes y guiones"
+              title="Hasta 35 caracteres. Solo letras, espacios, apóstrofes y guiones"
               required
             />
           </div>
 
           {/* Teléfono */}
           <div className="group">
-            <label htmlFor="telefono" className="block text-sm font-semibold text-amber-900 tracking-wide">
+            <label htmlFor="telefono" className="block text-sm font-semibold tracking-wide" style={{ color: '#F8EDD6' }}>
               Teléfono
             </label>
-            <div className="h-[2px] w-14 bg-amber-500 rounded-full mb-2"></div>
+            <div className="h-[2px] w-14 rounded-full mb-2" style={{ backgroundColor: '#E3C08C' }}></div>
             <input
               id="telefono"
               type="tel"
               inputMode="numeric"
-              className="w-full p-3 rounded-lg border-2 border-amber-300 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-600 bg-amber-50/50"
+              className="w-full p-3 rounded-lg border focus:outline-none focus:ring-2"
+              style={{ borderColor: '#E3C08C', backgroundColor: '#F8EDD6' + '14', color: '#F8EDD6' }}
               value={telefono}
               onChange={handleTelefonoChange}
               pattern="^[0-9]{8,12}$"
@@ -767,90 +961,141 @@ export default function PaginaPedido() {
 
           {/* Fecha y hora (solo PM) */}
           <div className="group">
-            <label className="block text-sm font-semibold text-amber-900 tracking-wide">
+            <label className="block text-sm font-semibold tracking-wide" style={{ color: '#F8EDD6' }}>
               Fecha y hora del pedido (solo PM)
             </label>
-            <div className="h-[2px] w-44 bg-amber-500 rounded-full mb-2"></div>
+            <div className="h-[2px] w-44 rounded-full mb-2" style={{ backgroundColor: '#E3C08C' }}></div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label htmlFor="fechaDia" className="sr-only">Fecha</label>
-                <input
+                <Flatpickr
                   id="fechaDia"
-                  type="date"
-                  className="w-full p-3 rounded-lg border-2 border-amber-300 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-600 bg-amber-50/50"
+                  options={{
+                    locale: Spanish,
+                    dateFormat: "Y-m-d",
+                    altInput: true,
+                    altFormat: "d/m/Y",
+                    minDate: (() => { const today = new Date(); today.setHours(0,0,0,0); const min = new Date(today); min.setDate(today.getDate() + 3); return min; })(),
+                    disable: [
+                      function(date) { return date.getDay() === 0 || date.getDay() === 6 || isHoliday(date); },
+                    ],
+                  }}
+                  className="w-full p-3 rounded-lg border focus:outline-none focus:ring-2"
+                  style={{ borderColor: '#E3C08C', backgroundColor: '#F8EDD6' + '14', color: '#F8EDD6' }}
                   value={fechaDia}
-                  onChange={handleFechaChange}
+                  placeholder="Selecciona fecha (dd/mm/aaaa)"
+                  onReady={(selectedDates, dateStr, instance) => {
+                    if (instance?.altInput) {
+                      instance.altInput.placeholder = 'Selecciona fecha (dd/mm/aaaa)';
+                      // Aplicar estilos coherentes con el resto de inputs
+                      instance.altInput.className = 'w-full p-3 rounded-lg border focus:outline-none focus:ring-2 datepicker-input';
+                      instance.altInput.style.borderColor = '#E3C08C';
+                      instance.altInput.style.backgroundColor = '#F8EDD6' + '14';
+                      instance.altInput.style.color = '#452216';
+                      instance.altInput.style.caretColor = '#F8EDD6';
+                    }
+                  }}
+                  onChange={(dates, str, instance) => {
+                    // Asegurar que el input real reciba el mensaje de validación
+                    const target = instance?.input ?? { value: str, setCustomValidity: () => {} };
+                    target.value = str;
+                    handleFechaChange({ target });
+                  }}
                   required
                 />
               </div>
               <div>
                 <label htmlFor="horaDia" className="sr-only">Hora (PM)</label>
-                <input
+                <select
                   id="horaDia"
-                  type="time"
-                  className="w-full p-3 rounded-lg border-2 border-amber-300 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-600 bg-amber-50/50"
+                  className="w-full p-3 rounded-lg border focus:outline-none focus:ring-2"
+                  style={{ borderColor: '#E3C08C', backgroundColor: '#F8EDD6' + '14', color: '#F8EDD6' }}
                   value={horaDia}
                   onChange={handleHoraChange}
-                  min="16:30"
-                  max="19:30"
-                  step="60"
                   title="Solo horario PM: 16:30 a 19:30"
                   required
-                />
+                >
+                  <option value="" disabled style={{ color: '#452216' }}>Selecciona hora (PM)</option>
+                  {['16:30','16:45','17:00','17:15','17:30','17:45','18:00','18:15','18:30','18:45','19:00','19:15','19:30'].map(t => (
+                    <option key={t} value={t} style={{ color: '#452216' }}>{t}</option>
+                  ))}
+                </select>
               </div>
             </div>
-            <p className="mt-1 text-xs text-neutral-600">Horario permitido: Lunes a viernes, de 4:30 pm a 7:30 pm (solo PM). Feriados excluidos.</p>
+            <p className="mt-1 text-xs" style={{ color: '#EED3A1' }}>Horario permitido: Lunes a viernes, de 4:30 pm a 7:30 pm (solo PM). Feriados excluidos.</p>
           </div>
 
           {/* A nombre de */}
           <div className="group">
-            <label htmlFor="aNombreDe" className="block text-sm font-semibold text-amber-900 tracking-wide">
+            <label htmlFor="aNombreDe" className="block text-sm font-semibold tracking-wide" style={{ color: '#F8EDD6' }}>
               A nombre de quién es el pedido
             </label>
-            <div className="h-[2px] w-24 bg-amber-500 rounded-full mb-2"></div>
+            <div className="h-[2px] w-24 rounded-full mb-2" style={{ backgroundColor: '#E3C08C' }}></div>
             <input
               id="aNombreDe"
               type="text"
-              className="w-full p-3 rounded-lg border-2 border-amber-300 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-600 bg-amber-50/50"
+              maxLength={35}
+              className="w-full p-3 rounded-lg border focus:outline-none focus:ring-2"
+              style={{ borderColor: '#E3C08C', backgroundColor: '#F8EDD6' + '14', color: '#F8EDD6' }}
               value={aNombreDe}
               onChange={handleANombreDeChange}
               pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñÜü' \-]{2,}$"
-              title="Solo letras, espacios, apóstrofes y guiones"
+              title="Hasta 35 caracteres. Solo letras, espacios, apóstrofes y guiones"
               required
             />
           </div>
 
           {/* Centímetros */}
           <div className="group">
-            <label htmlFor="centimetros" className="block text-sm font-semibold text-amber-900 tracking-wide">
+            <label htmlFor="centimetros" className="block text-sm font-semibold tracking-wide" style={{ color: '#F8EDD6' }}>
               Centímetros de la torta
             </label>
-            <div className="h-[2px] w-24 bg-amber-500 rounded-full mb-2"></div>
+            <div className="h-[2px] w-24 rounded-full mb-2" style={{ backgroundColor: '#E3C08C' }}></div>
             <input
               id="centimetros"
               type="number"
               min="1"
-              className="w-full p-3 rounded-lg border-2 border-amber-300 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-600 bg-amber-50/50"
+              max="99"
+              className="w-full p-3 rounded-lg border focus:outline-none focus:ring-2"
+              style={{ borderColor: '#E3C08C', backgroundColor: '#F8EDD6' + '14', color: '#F8EDD6' }}
               value={centimetros}
-              onChange={(e) => setCentimetros(e.target.value)}
+              onChange={(e) => {
+                const v = e.target.value.replace(/\D/g, '').slice(0, 2);
+                setCentimetros(v);
+              }}
               title="Ingrese solo números positivos"
               required
             />
+            <div className="mt-2">
+              <button
+                type="button"
+                className="px-3 py-1 text-sm rounded-full shadow btn-sheen"
+                style={{ backgroundColor: '#B78456', color: '#452216' }}
+                onClick={openPreview}
+              >
+                ver cm de la torta
+              </button>
+            </div>
           </div>
 
           {/* Cantidad de torta */}
           <div className="group">
-            <label htmlFor="cantidadTorta" className="block text-sm font-semibold text-amber-900 tracking-wide">
+            <label htmlFor="cantidadTorta" className="block text-sm font-semibold tracking-wide" style={{ color: '#F8EDD6' }}>
               Cantidad de torta
             </label>
-            <div className="h-[2px] w-24 bg-amber-500 rounded-full mb-2"></div>
+            <div className="h-[2px] w-24 rounded-full mb-2" style={{ backgroundColor: '#E3C08C' }}></div>
             <input
               id="cantidadTorta"
               type="number"
               min="1"
-              className="w-full p-3 rounded-lg border-2 border-amber-300 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-600 bg-amber-50/50"
+              max="99"
+              className="w-full p-3 rounded-lg border focus:outline-none focus:ring-2"
+              style={{ borderColor: '#E3C08C', backgroundColor: '#F8EDD6' + '14', color: '#F8EDD6' }}
               value={cantidadTorta}
-              onChange={(e) => setCantidadTorta(e.target.value)}
+              onChange={(e) => {
+                const v = e.target.value.replace(/\D/g, '').slice(0, 2);
+                setCantidadTorta(v);
+              }}
               title="Ingrese cantidad (mínimo 1)"
               required
             />
@@ -858,14 +1103,15 @@ export default function PaginaPedido() {
 
           {/* Campo adicional */}
           <div className="group">
-            <label htmlFor="campoExtra" className="block text-sm font-semibold text-amber-900 tracking-wide">
+            <label htmlFor="campoExtra" className="block text-sm font-semibold tracking-wide" style={{ color: '#F8EDD6' }}>
               Notas del pedido
             </label>
-            <div className="h-[2px] w-20 bg-amber-500 rounded-full mb-2"></div>
+            <div className="h-[2px] w-20 rounded-full mb-2" style={{ backgroundColor: '#E3C08C' }}></div>
             <input
               id="campoExtra"
               type="text"
-              className="w-full p-3 rounded-lg border-2 border-amber-300 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-600 bg-amber-50/50"
+              className="w-full p-3 rounded-lg border focus:outline-none focus:ring-2"
+              style={{ borderColor: '#E3C08C', backgroundColor: '#F8EDD6' + '14', color: '#F8EDD6' }}
               value={campoExtra}
               onChange={handleCampoExtraChange}
               minLength={3}
@@ -875,26 +1121,42 @@ export default function PaginaPedido() {
           </div>
 
           <label className="flex items-center gap-3">
-            <input type="checkbox" checked={pickupAck} onChange={(e) => setPickupAck(e.target.checked)} required />
-            <span className="text-neutral-800">Reconozco que debo retirar la torta en el local</span>
+            <input
+              type="checkbox"
+              checked={pickupAck}
+              onChange={(e) => {
+                setPickupAck(e.target.checked);
+                e.target.setCustomValidity(e.target.checked ? '' : 'Debes seleccionar esta casilla para continuar');
+              }}
+              required
+            />
+            <span style={{ color: '#EED3A1' }}>Reconozco que debo retirar la torta en el local</span>
           </label>
 
           <label className="flex items-center gap-3">
-            <input type="checkbox" checked={depositAck} onChange={(e) => setDepositAck(e.target.checked)} required />
-            <span className="text-neutral-800">Reconozco realizar abono del pedido</span>
+            <input
+              type="checkbox"
+              checked={depositAck}
+              onChange={(e) => {
+                setDepositAck(e.target.checked);
+                e.target.setCustomValidity(e.target.checked ? '' : 'Debes seleccionar esta casilla para continuar');
+              }}
+              required
+            />
+            <span style={{ color: '#EED3A1' }}>Reconozco realizar abono del pedido</span>
           </label>
 
           <div className="flex gap-4 mt-2">
-            <button type="button" onClick={() => setStep(1)} className="px-6 py-3 bg-neutral-200 text-neutral-800 rounded-lg font-semibold hover:bg-neutral-300">Volver</button>
-            <button type="submit" className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 shadow-md">Enviar pedido</button>
+            <button type="button" onClick={() => setStep(1)} className="px-6 py-3 rounded-full font-semibold shadow-md btn-sheen" style={{ backgroundColor: '#B78456', color: '#452216' }}>Volver</button>
+            <button type="submit" className="flex-1 px-6 py-3 rounded-full font-semibold shadow-lg btn-sheen focus:outline-none" style={{ backgroundImage: 'linear-gradient(90deg, #D7A46B 0%, #B78456 100%)', color: '#452216', border: '2px solid #E3C08C' }}>Enviar pedido</button>
           </div>
         </form>
       )}
 
       {/* Modal de vista previa de imagen (paso 2) */}
-      {showPreview && (
+      {showPreview && createPortal((
         <div
-          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center"
+          className="fixed inset-0 z-[1000] bg-black/70 backdrop-blur-sm flex items-center justify-center"
           role="dialog"
           aria-modal="true"
           onClick={closePreview}
@@ -925,25 +1187,29 @@ export default function PaginaPedido() {
             </div>
           </div>
         </div>
-      )}
+      ), document.body)}
 
       {/* Modal añadir nueva torta (solo admin) */}
-  {showAddModal && isAdmin() && (
+  {showAddModal && isAdmin() && createPortal((
         <div
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center"
+          className="fixed inset-0 z-[1000] bg-black/60 backdrop-blur-sm flex items-center justify-center"
           role="dialog"
           aria-modal="true"
           onClick={closeAddModal}
         >
           <div
-            className="relative w-[92vw] max-w-[720px] bg-white rounded-xl shadow-2xl p-6"
+            className="relative w-[92vw] max-w-[720px] rounded-xl shadow-2xl p-6 border-2"
+            style={{ backgroundColor: '#783719', borderColor: '#B78456' }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between mb-4">
-              <h3 className="text-2xl font-extrabold text-amber-800">Añadir nueva torta</h3>
+              <h3 className="text-2xl font-extrabold" style={{ color: '#F8EDD6' }}>Añadir nueva torta</h3>
               <button
                 type="button"
-                className="px-3 py-1.5 rounded-md bg-neutral-200 text-neutral-900 hover:bg-neutral-300"
+                className="px-3 py-1.5 rounded-md font-semibold focus:outline-none focus:ring-2"
+                style={{ backgroundColor: '#B78456', color: '#452216' }}
+                onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#b78456e6'; }}
+                onMouseOut={(e) => { e.currentTarget.style.backgroundColor = '#B78456'; }}
                 onClick={closeAddModal}
                 aria-label="Cerrar"
               >
@@ -953,71 +1219,133 @@ export default function PaginaPedido() {
 
             <form onSubmit={handleAddCakeSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label htmlFor="newCakeName" className="block text-sm font-semibold text-amber-900 tracking-wide">Nombre de la torta</label>
-                <div className="h-[2px] w-24 bg-amber-500 rounded-full mb-2"></div>
+                <label htmlFor="newCakeName" className="block text-sm font-semibold tracking-wide" style={{ color: '#FBDFA2' }}>Nombre de la torta</label>
+                <div className="h-[2px] w-24 rounded-full mb-2" style={{ backgroundColor: '#B78456' }}></div>
                 <input
                   id="newCakeName"
                   type="text"
-                  className="w-full p-3 rounded-lg border-2 border-amber-300 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-600 bg-amber-50/50"
+                  className="w-full p-3 rounded-lg border-2 focus:outline-none focus:ring-2"
+                  style={{
+                    borderColor: '#B78456',
+                    backgroundColor: '#FBDFA2' + '1A',
+                    color: '#F8EDD6'
+                  }}
                   value={newCakeName}
-                  onChange={(e) => setNewCakeName(e.target.value)}
+                  onChange={(e) => setNewCakeName(e.target.value.slice(0, 35))}
+                  maxLength={35}
                   minLength={2}
                   required
                 />
-                <p className="mt-2 text-xs text-neutral-600">Recomendación: usa un nombre corto y claro.</p>
+                <p className="mt-2 text-xs" style={{ color: '#FBDFA2' }}>Máximo 35 caracteres.</p>
               </div>
 
               <div>
-                <label htmlFor="newCakeImageFile" className="block text-sm font-semibold text-amber-900 tracking-wide">Imagen de la torta</label>
-                <div className="h-[2px] w-24 bg-amber-500 rounded-full mb-2"></div>
-                <input
-                  id="newCakeImageFile"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleNewCakeFileChange}
-                  className="w-full p-3 rounded-lg border-2 border-amber-300 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-600 bg-amber-50/50"
-                  required
-                />
-                {newCakePreview && (
-                  <div className="mt-3 w-full h-[160px] rounded-lg overflow-hidden border border-amber-300 bg-neutral-50">
-                    <img src={newCakePreview} alt="Vista previa" className="w-full h-full object-cover" />
+                <label className="block text-sm font-semibold tracking-wide" style={{ color: '#FBDFA2' }}>Imagen de la torta</label>
+                <div className="h-[2px] w-24 rounded-full mb-2" style={{ backgroundColor: '#B78456' }}></div>
+                <div className="mb-3 flex gap-6 text-sm" style={{ color: '#FBDFA2' }}>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="newCakeImageSource"
+                      checked={!newCakeUseDeviceImage}
+                      onChange={() => setNewCakeUseDeviceImage(false)}
+                      className="accent-amber-700"
+                    />
+                    URL de imagen
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="newCakeImageSource"
+                      checked={newCakeUseDeviceImage}
+                      onChange={() => setNewCakeUseDeviceImage(true)}
+                      className="accent-amber-700"
+                    />
+                    Subir desde dispositivo
+                  </label>
+                </div>
+                {!newCakeUseDeviceImage ? (
+                  <div>
+                    <input
+                      type="text"
+                      placeholder="https://..."
+                      value={newCakeImageUrl}
+                      onChange={handleNewCakeImageUrlChange}
+                      className="w-full p-3 rounded-lg border-2 focus:outline-none focus:ring-2"
+                      style={{
+                        borderColor: '#B78456',
+                        backgroundColor: '#FBDFA2' + '1A',
+                        color: '#F8EDD6'
+                      }}
+                    />
+                    {newCakePreview && (
+                      <div className="mt-3 w-full h-[160px] rounded-lg overflow-hidden border" style={{ borderColor: '#B78456', backgroundColor: '#452216' + '66' }}>
+                        <img src={newCakePreview} alt="Vista previa" className="w-full h-full object-cover" onError={(ev) => { ev.currentTarget.style.display = 'none'; }} />
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div>
+                    <input
+                      id="newCakeImageFile"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleNewCakeFileChange}
+                      className="w-full p-3 rounded-lg border-2 focus:outline-none focus:ring-2"
+                      style={{
+                        borderColor: '#B78456',
+                        backgroundColor: '#FBDFA2' + '1A',
+                        color: '#F8EDD6'
+                      }}
+                    />
+                    {newCakePreview && (
+                      <div className="mt-3 w-full h-[160px] rounded-lg overflow-hidden border" style={{ borderColor: '#B78456', backgroundColor: '#452216' + '66' }}>
+                        <img src={newCakePreview} alt="Vista previa" className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                    <p className="mt-2 text-xs" style={{ color: '#FBDFA2' }}>Selecciona una imagen desde tus archivos locales.</p>
                   </div>
                 )}
-                <p className="mt-2 text-xs text-neutral-600">Selecciona una imagen desde tus archivos locales.</p>
               </div>
 
               <div>
-                <label htmlFor="newCakePrice" className="block text-sm font-semibold text-amber-900 tracking-wide">Precio</label>
-                <div className="h-[2px] w-24 bg-amber-500 rounded-full mb-2"></div>
+                <label htmlFor="newCakePrice" className="block text-sm font-semibold tracking-wide" style={{ color: '#FBDFA2' }}>Precio</label>
+                <div className="h-[2px] w-24 rounded-full mb-2" style={{ backgroundColor: '#B78456' }}></div>
                 <input
                   id="newCakePrice"
                   type="text"
                   inputMode="numeric"
-                  className="w-full p-3 rounded-lg border-2 border-amber-300 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-600 bg-amber-50/50"
+                  className="w-full p-3 rounded-lg border-2 focus:outline-none focus:ring-2"
+                  style={{
+                    borderColor: '#B78456',
+                    backgroundColor: '#FBDFA2' + '1A',
+                    color: '#F8EDD6'
+                  }}
                   value={newCakePrice}
-                  onChange={(e) => setNewCakePrice(sanitizePriceDigits(e.target.value))}
-                  onBlur={(e) => setNewCakePrice(formatChileanPrice(sanitizePriceDigits(e.target.value)))}
-                  onFocus={(e) => setNewCakePrice(sanitizePriceDigits(e.target.value))}
+                  onChange={(e) => setNewCakePrice(sanitizePriceDigits(e.target.value).slice(0, 15))}
+                  onBlur={(e) => setNewCakePrice(formatChileanPrice(sanitizePriceDigits(e.target.value).slice(0, 15)))}
+                  onFocus={(e) => setNewCakePrice(sanitizePriceDigits(e.target.value).slice(0, 15))}
+                  maxLength={15}
                   placeholder="Ej: 24990"
                   required
                 />
-                <p className="mt-2 text-xs text-neutral-600">Ingresa el precio en pesos chilenos.</p>
+                <p className="mt-2 text-xs" style={{ color: '#FBDFA2' }}>Ingresa el precio en pesos chilenos. Máximo 15 dígitos.</p>
               </div>
 
               {newCakeError && (
                 <div className="md:col-span-2">
-                  <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">{newCakeError}</p>
+                  <p className="text-sm rounded-md px-3 py-2 border" style={{ color: '#F8EDD6', backgroundColor: 'rgba(127, 29, 29, 0.35)', borderColor: '#B78456' }}>{newCakeError}</p>
                 </div>
               )}
 
               <div className="md:col-span-2 flex gap-3 justify-end">
-                <button type="button" onClick={closeAddModal} className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-lg bg-neutral-200 text-neutral-900 font-semibold hover:bg-neutral-300 transition-all">Cancelar</button>
-                <button type="submit" className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-lg bg-gradient-to-r from-amber-700 via-amber-600 to-amber-500 text-white font-semibold shadow-sm hover:shadow-md hover:brightness-105 transition-all focus:outline-none focus:ring-2 focus:ring-amber-300">Añadir</button>
+                <button type="button" onClick={closeAddModal} className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-lg font-semibold transition-all focus:outline-none focus:ring-2" style={{ backgroundColor: '#B78456', color: '#452216' }}>Cancelar</button>
+                <button type="submit" className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-lg font-semibold shadow-sm transition-all focus:outline-none focus:ring-2" style={{ backgroundColor: '#783719', color: '#F8EDD6' }}>Añadir</button>
               </div>
             </form>
           </div>
         </div>
-      )}
+      ), document.body)}
     </div>
   );
 }

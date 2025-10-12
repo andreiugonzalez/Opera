@@ -18,7 +18,7 @@ const Notification = () => {
   if (!notification) return null;
 
   const getNotificationStyles = () => {
-    const baseStyles = "fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 transform translate-x-0 opacity-100 max-w-sm";
+    const baseStyles = "fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 transform translate-x-0 opacity-100 max-w-sm text-opera";
     
     switch (notification.type) {
       case 'success':

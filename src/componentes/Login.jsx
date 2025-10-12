@@ -52,18 +52,19 @@ export default function Login({ onClose, onSuccess }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-neutral-900 via-neutral-800 to-black flex items-center justify-center z-50 overflow-hidden animate-fadeIn">
-      <div className="bg-white/95 backdrop-blur-sm rounded-xl p-6 w-80 mx-4 shadow-2xl border border-white/20 overflow-hidden animate-slideInScale">
+    <div className="fixed inset-0 flex items-center justify-center z-50 overflow-hidden animate-fadeIn"
+      style={{ background: 'linear-gradient(135deg, rgba(120,55,25,0.25), rgba(0,0,0,0.2))' }}>
+      <div className="rounded-xl p-6 w-80 mx-4 shadow-2xl overflow-hidden animate-slideInScale border-2"
+        style={{ backgroundColor: '#F8EDD6', borderColor: '#B78456' }}>
         <div className="text-center mb-4 overflow-hidden">
-          <h2 className="text-2xl font-bold text-red-700 mb-2 animate-slideInUp">Acceso Administrador</h2>
-          
-          <p className="text-gray-600 text-sm animate-slideInUp" style={{animationDelay: '0.05s', animationFillMode: 'both'}}>Ingresa tus credenciales</p>
+          <h2 className="text-2xl font-bold mb-2 animate-slideInUp" style={{ color: '#783719' }}>Acceso Administrador</h2>
+          <p className="text-sm animate-slideInUp" style={{animationDelay: '0.05s', animationFillMode: 'both', color: '#452216'}}>Ingresa tus credenciales</p>
         </div>
 
         {/* Inputs para admin */}
         <div className="mb-4 space-y-3 overflow-hidden">
           <div className="animate-slideInUp" style={{animationDelay: '0.1s', animationFillMode: 'both'}}>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: '#783719' }}>
               Nombre de usuario
             </label>
             <input
@@ -71,13 +72,14 @@ export default function Login({ onClose, onSuccess }) {
                value={username}
                onChange={(e) => setUsername(e.target.value)}
                onKeyPress={handleKeyPress}
-               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent input-transition"
+               className="w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2 input-transition"
+               style={{ borderWidth: '2px', borderColor: '#B78456', backgroundColor: '#FBDFA2' + '1A', color: '#452216' }}
                placeholder="Administrador"
                autoFocus
              />
           </div>
           <div className="animate-slideInUp" style={{animationDelay: '0.2s', animationFillMode: 'both'}}>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: '#783719' }}>
               Contraseña
             </label>
             <div className="relative">
@@ -86,14 +88,16 @@ export default function Login({ onClose, onSuccess }) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 onKeyPress={handleKeyPress}
-                className="w-full pr-10 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent input-transition"
+                className="w-full pr-10 px-3 py-2 rounded-md focus:outline-none focus:ring-2 input-transition"
+                style={{ borderWidth: '2px', borderColor: '#B78456', backgroundColor: '#FBDFA2' + '1A', color: '#452216' }}
                 placeholder="Contraseña"
               />
               <button
                 type="button"
                 aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 onClick={() => setShowPassword((v) => !v)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                className="absolute right-2 top-1/2 -translate-y-1/2"
+                style={{ color: '#783719' }}
               >
                 {showPassword ? (
                   // Ícono ojo tachado
@@ -114,7 +118,8 @@ export default function Login({ onClose, onSuccess }) {
 
         {/* Error message */}
         {error && (
-          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-md animate-slideInUp">
+          <div className="mb-4 p-3 rounded-md animate-slideInUp"
+            style={{ backgroundColor: '#FBDFA2' + '33', border: '2px solid #B78456', color: '#783719' }}>
             {error}
           </div>
         )}
@@ -123,15 +128,15 @@ export default function Login({ onClose, onSuccess }) {
         <div className="flex flex-col gap-3">
           <button
             onClick={handleAdminLogin}
-            className="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 button-transition animate-slideInUp"
-            style={{animationDelay: '0.3s', animationFillMode: 'both'}}
+            className="w-full px-4 py-2 rounded-md button-transition animate-slideInUp shadow-md"
+            style={{animationDelay: '0.3s', animationFillMode: 'both', backgroundColor: '#783719', color: '#F8EDD6'}}
           >
             Ingresar
           </button>
           <button
             onClick={onClose}
-            className="w-full px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 button-transition animate-slideInUp"
-            style={{animationDelay: '0.4s', animationFillMode: 'both'}}
+            className="w-full px-4 py-2 rounded-md button-transition animate-slideInUp shadow-md"
+            style={{animationDelay: '0.4s', animationFillMode: 'both', backgroundColor: '#B78456', color: '#452216'}}
           >
             Cancelar
           </button>

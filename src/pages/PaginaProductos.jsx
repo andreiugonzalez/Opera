@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useProducts } from "../contexts/ProductsContext";
@@ -28,6 +28,31 @@ export default function PaginaProductos() {
   const filtrarProductos = () => {
     return getProductsByCategory(filtro);
   };
+
+  // Asegurar que al entrar se muestre desde arriba en móviles y desktop
+  useEffect(() => {
+    let prev = null;
+    try {
+      if (typeof window !== 'undefined' && 'scrollRestoration' in window.history) {
+        prev = window.history.scrollRestoration;
+        window.history.scrollRestoration = 'manual';
+      }
+    } catch {}
+    if (typeof window !== 'undefined') {
+      window.requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+        document.body.scrollTop = 0;
+        document.documentElement.scrollTop = 0;
+      });
+    }
+    return () => {
+      try {
+        if (typeof window !== 'undefined' && 'scrollRestoration' in window.history && prev) {
+          window.history.scrollRestoration = prev;
+        }
+      } catch {}
+    };
+  }, []);
 
   const handleAddProduct = () => {
     setModalMode('add');
@@ -60,11 +85,11 @@ export default function PaginaProductos() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 p-4 sm:p-6 lg:p-8 overflow-x-hidden font-serif relative">
+    <div className="w-full min-h-screen bg-[#B78456] p-4 sm:p-6 lg:p-8 overflow-x-hidden font-serif relative fade-in-up fade-in">
       {/* Flecha volver */}
       <button
         onClick={() => navigate("/")}
-        className="absolute top-6 left-6 p-2 rounded-full bg-amber-600 text-white hover:bg-amber-700 transition-colors shadow-md"
+        className="fixed top-6 left-6 z-50 pointer-events-auto btn-back-783719 btn-sheen fade-in-up-strong delay-150"
         aria-label="Volver a inicio"
       >
         <svg
@@ -79,15 +104,15 @@ export default function PaginaProductos() {
         </svg>
       </button>
 
-      <div className="text-center mb-12">
-        <h1 className="text-5xl font-extrabold text-amber-700 mb-6">
+      <div className="text-center mb-12 fade-in-up-strong">
+        <h1 className="text-5xl font-extrabold text-[#F8EDD6] mb-6 underline-elegant text-glow-soft">
           Productos
         </h1>
         {isAdmin() && (
-          <div className="flex gap-4 justify-center">
+          <div className="flex gap-4 justify-center fade-in-up-strong">
             <button
               onClick={handleAddProduct}
-              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold shadow-md flex items-center gap-2"
+              className="px-6 py-3 bg-[#452216] text-white rounded-lg hover:bg-[#452216]/90 transition font-semibold shadow-md flex items-center gap-2 btn-sheen"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -96,7 +121,7 @@ export default function PaginaProductos() {
             </button>
             <button
               onClick={() => setShowCategoryModal(true)}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold shadow-md flex items-center gap-2"
+              className="px-6 py-3 bg-[#452216] text-white rounded-lg hover:bg-[#452216]/90 transition font-semibold shadow-md flex items-center gap-2 btn-sheen"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -110,14 +135,14 @@ export default function PaginaProductos() {
       {/* Botones de filtro: Desktop y Móvil con flechas */}
       <div className="mb-12">
         {/* Desktop/Tablet */}
-        <div className="hidden sm:flex justify-center gap-4">
+        <div className="hidden sm:flex justify-center gap-4 stagger-children-strong">
           {categories.map((categoria) => (
             <button
               key={categoria.id || categoria.name}
-              className={`px-6 py-2 rounded-full font-semibold transition-colors shadow-md ${
+              className={`px-6 py-2 rounded-full font-semibold transition-all shadow-md btn-sheen ${
                 filtro === categoria.name
-                  ? "bg-amber-600 text-white shadow-amber-500"
-                  : "bg-white text-amber-700 hover:bg-amber-300"
+                  ? "bg-[#452216] text-white shadow-[#452216]"
+                  : "bg-white text-[#452216] hover:bg-[#B78456]/30 border border-[#452216]"
               }`}
               onClick={() => setFiltro(categoria.name)}
             >
@@ -130,7 +155,7 @@ export default function PaginaProductos() {
           <button
             type="button"
             onClick={() => scrollFilters(-1)}
-            className="p-2 rounded-full bg-amber-600 text-white hover:bg-amber-700 shadow-md"
+            className="p-2 rounded-full bg-[#452216] text-white hover:bg-[#452216]/90 shadow-md btn-sheen"
             aria-label="Anterior categoría"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
@@ -144,10 +169,10 @@ export default function PaginaProductos() {
             {categories.map((categoria) => (
               <button
                 key={categoria.id || categoria.name}
-                className={`inline-flex px-4 py-2 rounded-full font-semibold transition-colors shadow-md snap-start ${
+                className={`inline-flex px-4 py-2 rounded-full font-semibold transition-all shadow-md snap-start btn-sheen ${
                   filtro === categoria.name
-                    ? "bg-amber-600 text-white shadow-amber-500"
-                    : "bg-white text-amber-700 hover:bg-amber-300"
+                    ? "bg-[#452216] text-white shadow-[#452216]"
+                    : "bg-white text-[#452216] hover:bg-[#B78456]/30 border border-[#452216]"
                 }`}
                 onClick={() => setFiltro(categoria.name)}
               >
@@ -158,7 +183,7 @@ export default function PaginaProductos() {
           <button
             type="button"
             onClick={() => scrollFilters(1)}
-            className="p-2 rounded-full bg-amber-600 text-white hover:bg-amber-700 shadow-md"
+            className="p-2 rounded-full bg-[#452216] text-white hover:bg-[#452216]/90 shadow-md btn-sheen"
             aria-label="Siguiente categoría"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
@@ -178,17 +203,23 @@ export default function PaginaProductos() {
           <div className="text-red-600 text-xl">Error: {error}</div>
         </div>
       ) : (
-        <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3 max-w-6xl mx-auto">
+        <div className="productos-grid grid gap-8 sm:grid-cols-2 md:grid-cols-3 max-w-6xl mx-auto stagger-children-strong">
+          {filtrarProductos().length === 0 && (
+            <div className="col-span-full text-center py-16 card-elegant">
+              <h3 className="text-2xl font-bold text-amber-900 mb-2">No hay productos disponibles</h3>
+              <p className="text-neutral-700">Selecciona otra categoría o agrega productos desde el panel de administración.</p>
+            </div>
+          )}
           {filtrarProductos().map((producto) => (
           <div
             key={producto.id}
             onMouseEnter={() => setHoverId(producto.id)}
             onMouseLeave={() => setHoverId(null)}
-            className={`bg-white rounded-xl shadow-lg overflow-hidden transform transition-transform duration-500 hover:scale-105 cursor-pointer relative ${
+            className={`chart-elegant-783719 rounded-xl shadow-lg overflow-hidden transform will-change-transform transition duration-400 ease-out hover:scale-[1.04] cursor-pointer relative float-strong ${
               hoverId !== null && hoverId !== producto.id
-                ? "filter blur-sm opacity-60"
+                ? "filter blur-md opacity-60"
                 : "filter-none opacity-100"
-            }`}
+            } ${hoverId === producto.id ? "z-10" : "z-0"}`}
           >
             {/* Botones de administración */}
             {isAdmin() && (
@@ -198,7 +229,7 @@ export default function PaginaProductos() {
                     e.stopPropagation();
                     handleEditProduct(producto);
                   }}
-                  className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-md"
+                  className="p-2 bg-[#452216] text-white rounded-full hover:bg-[#452216]/90 transition shadow-md btn-sheen"
                   title="Editar producto"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -210,7 +241,7 @@ export default function PaginaProductos() {
                     e.stopPropagation();
                     handleDeleteProduct(producto);
                   }}
-                  className="p-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors shadow-md"
+                  className="p-2 bg-[#452216] text-white rounded-full hover:bg-[#452216]/90 transition shadow-md btn-sheen"
                   title="Eliminar producto"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -220,7 +251,7 @@ export default function PaginaProductos() {
               </div>
             )}
             
-            <div className="bg-gradient-to-br from-amber-100 to-amber-200 p-3 rounded-t-xl ring-1 ring-amber-300 flex items-center justify-center">
+            <div className="p-3 rounded-t-xl ring-1 ring-[#F8EDD6]/40 flex items-center justify-center frame-inner-glow">
               <img
                 src={producto.image_url || producto.imagen}
                 alt={producto.name || producto.titulo}
@@ -230,9 +261,9 @@ export default function PaginaProductos() {
               />
             </div>
             <div className="p-6">
-              <h2 className="text-2xl font-bold text-amber-600 mb-2">{producto.name || producto.titulo}</h2>
-              <p className="text-neutral-700 mb-4">{producto.description || producto.ingredients || producto.ingredientes}</p>
-              <p className="text-amber-700 font-semibold text-xl">
+              <h2 className="text-2xl font-bold text-[#F8EDD6] mb-2">{producto.name || producto.titulo}</h2>
+              <p className="text-[#F8EDD6]/90 mb-4">{producto.description || producto.ingredients || producto.ingredientes}</p>
+              <p className="text-[#FBDFA2] font-semibold text-xl">
                 ${formatChileanPrice(producto.price || producto.precio)}
               </p>
             </div>
