@@ -18,11 +18,46 @@ const PORT = process.env.PORT || 3001;
 // Middlewares
 // CORS dinámico: permite credenciales y valida origen contra lista permitida
 const isProd = process.env.NODE_ENV === 'production';
+
+// Normaliza un origen a su forma canonical (protocol + host, sin slash final)
+const normalizeOrigin = (url) => {
+  try {
+    const u = new URL(url);
+    return u.origin.replace(/\/$/, '');
+  } catch {
+    return (url || '').replace(/\/$/, '');
+  }
+};
+
+// Genera variantes con y sin www para evitar errores de coincidencia exacta
+const originVariants = (url) => {
+  const normalized = normalizeOrigin(url);
+  try {
+    const u = new URL(normalized);
+    const host = u.hostname.toLowerCase();
+    const hasWww = host.startsWith('www.');
+    const altHost = hasWww ? host.slice(4) : `www.${host}`;
+    const altOrigin = `${u.protocol}//${altHost}`;
+    return [normalized, altOrigin];
+  } catch {
+    return [normalized];
+  }
+};
+
+// Permitir múltiples orígenes por variable de entorno (coma separada)
+const envAllowed = (process.env.ALLOWED_ORIGINS || '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+
 const allowedOrigins = [
-  process.env.FRONTEND_URL,
+  ...originVariants(process.env.FRONTEND_URL || ''),
+  ...envAllowed.flatMap(originVariants),
   'http://localhost:5173',
   'http://127.0.0.1:5173'
-].filter(Boolean);
+]
+  .filter(Boolean)
+  .map(normalizeOrigin);
 
 // En desarrollo, permitir cualquier origen para facilitar pruebas multi-dispositivo
 // En producción, restringir a FRONTEND_URL y orígenes explícitos
@@ -31,8 +66,9 @@ const corsOptions = isProd
       origin: (origin, callback) => {
         // Permitir peticiones sin origen (Postman, curl)
         if (!origin) return callback(null, true);
-        if (allowedOrigins.includes(origin)) return callback(null, true);
-        return callback(new Error(`Origen no permitido por CORS: ${origin}`));
+        const normalized = normalizeOrigin(origin);
+        if (allowedOrigins.includes(normalized)) return callback(null, true);
+        return callback(new Error(`Origen no permitido por CORS: ${origin}. Permitidos: ${allowedOrigins.join(', ')}`));
       },
       credentials: true,
     }
