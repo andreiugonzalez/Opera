@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+import { API_BASE_URL } from '../utils/apiBase';
 
 const CakesContext = createContext();
 
@@ -8,8 +9,7 @@ export const useCakes = () => {
   return ctx;
 };
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || '/api';
+// API base sanitizada desde util
 
 export const CakesProvider = ({ children }) => {
   const [cakes, setCakes] = useState([]);

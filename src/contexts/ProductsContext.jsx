@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { API_BASE_URL } from '../utils/apiBase';
 
 const ProductsContext = createContext();
 
@@ -10,9 +11,7 @@ export const useProducts = () => {
   return context;
 };
 
-// URL base de la API (configurable por entorno)
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || '/api';
+// URL base de la API obtenida desde util (sanitizada)
 
 export const ProductsProvider = ({ children }) => {
   const [products, setProducts] = useState([]);

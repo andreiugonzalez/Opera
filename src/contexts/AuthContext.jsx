@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { API_BASE_URL } from '../utils/apiBase';
 // NOTA IMPORTANTE (deploy/Vercel):
 // - La variable `API_BASE_URL` se toma de `import.meta.env.VITE_API_BASE_URL`.
 //   Si no está definida, en localhost usa `http://localhost:3001/api`,
@@ -300,10 +301,3 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
-  const API_BASE_URL =
-    import.meta.env.VITE_API_BASE_URL || '/api';
-// Si despliegas frontend en Vercel y backend en Railway:
-// - Configura VITE_API_BASE_URL en Vercel (Settings -> Environment Variables)
-//   ejemplo: VITE_API_BASE_URL = https://<railway-app>.up.railway.app/api
-// - En backend .env: FRONTEND_URL debe ser el dominio del frontend, p.ej. https://<tu-vercel>.vercel.app
-// - Sin estas variables correctas, el navegador puede bloquear la solicitud (CORS) y mostrar "Failed to fetch".
