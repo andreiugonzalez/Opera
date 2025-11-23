@@ -880,7 +880,7 @@ html.resizing *::after {
   transition: transform 300ms ease, box-shadow 300ms ease, filter 300ms ease;
 }
 .pedidos-card:hover {
-  transform: translateY(-2px) scale(1.01);
+  transform: translateY(-1px) scale(1.03);
   box-shadow: 0 18px 32px rgba(69, 34, 22, 0.12), 0 12px 12px rgba(69, 34, 22, 0.08);
   filter: brightness(1.03);
 }
@@ -888,19 +888,9 @@ html.resizing *::after {
 /* Animación elegante para imágenes de tortas */
 .cake-photo {
   will-change: transform, filter;
-  animation: cakeFloat 7.2s ease-in-out infinite;
+  transition: transform 280ms ease, filter 200ms ease;
 }
-.cake-photo:hover {
-  transform: scale(1.02);
-  filter: brightness(1.04) contrast(1.02);
-}
-@keyframes cakeFloat {
-  0%   { transform: translateY(0) scale(1); filter: drop-shadow(0 2px 2px rgba(0,0,0,0.06)); }
-  22%  { transform: translateY(-4px) scale(1.005); filter: drop-shadow(0 6px 6px rgba(0,0,0,0.08)); }
-  50%  { transform: translateY(1px) scale(1.0); filter: drop-shadow(0 3px 3px rgba(0,0,0,0.07)); }
-  78%  { transform: translateY(5px) scale(0.997); filter: drop-shadow(0 1px 1px rgba(0,0,0,0.05)); }
-  100% { transform: translateY(0) scale(1); filter: drop-shadow(0 2px 2px rgba(0,0,0,0.06)); }
-}
+.cake-photo:hover { transform: scale(1.03); }
 
 /* Brillo diagonal sutil para tarjetas de tortas */
 .pedidos-card.btn-sheen::after {
@@ -1046,4 +1036,114 @@ html.resizing *::after {
 }
 .flatpickr-next-month, .flatpickr-prev-month {
   fill: #F8EDD6;
+}
+.reveal-once {
+  opacity: 0;
+}
+.reveal-once.is-visible {
+  animation: fadeIn 420ms ease-out both;
+  opacity: 1;
+}
+
+/* Variantes profesionales y lentas (solo transform + opacity) */
+.reveal-slow { opacity: 0; }
+.reveal-slow.is-visible { animation: fadeInLong 900ms ease-out both; opacity: 1; }
+
+.reveal-slide-up { opacity: 0; will-change: transform; }
+.reveal-slide-up.is-visible { animation: slideUpSoft 900ms ease-out both; opacity: 1; }
+
+.reveal-zoom-soft { opacity: 0; will-change: transform; }
+.reveal-zoom-soft.is-visible { animation: zoomSoft 900ms ease-out both; opacity: 1; }
+
+.reveal-stagger > * { opacity: 0; transform: translateY(12px); }
+.reveal-stagger.is-visible > * { animation: slideUpSoft 800ms ease-out both; opacity: 1; transform: none; }
+.reveal-stagger.is-visible > *:nth-child(1) { animation-delay: 100ms; }
+.reveal-stagger.is-visible > *:nth-child(2) { animation-delay: 200ms; }
+.reveal-stagger.is-visible > *:nth-child(3) { animation-delay: 300ms; }
+.reveal-stagger.is-visible > *:nth-child(4) { animation-delay: 400ms; }
+.reveal-stagger.is-visible > *:nth-child(5) { animation-delay: 500ms; }
+.reveal-stagger.is-visible > *:nth-child(6) { animation-delay: 600ms; }
+
+.reveal-stagger.is-visible > .pedidos-card:hover { transform: translateY(-1px) scale(1.03); }
+
+.reveal-card-elegant { opacity: 0; transform: translateY(14px) scale(0.995); will-change: transform, opacity; }
+.reveal-card-elegant.is-visible { animation: cardEnterElegant 1400ms cubic-bezier(.22,.61,.36,1) both; opacity: 1; }
+@keyframes cardEnterElegant {
+  0% { transform: translateY(26px) scale(0.98); opacity: 0; }
+  60% { transform: translateY(0) scale(1.015); opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+@keyframes fadeInLong {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slideUpSoft {
+  0% { transform: translateY(16px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+@keyframes zoomSoft {
+  0% { transform: scale(0.985); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-slow,
+  .reveal-slide-up,
+  .reveal-zoom-soft,
+  .reveal-stagger > * {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .reveal-card-elegant,
+  .reveal-card-elegant.is-visible {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+.carousel-frame {
+  position: relative;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 14px 28px rgba(69, 34, 22, 0.12), 0 10px 10px rgba(69, 34, 22, 0.08);
+  aspect-ratio: 16 / 10;
+  min-height: 260px;
+}
+.carousel-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 1200ms ease-in-out, transform 1200ms ease-in-out;
+  will-change: opacity, transform;
+}
+.carousel-image.active {
+  opacity: 1;
+  transform: scale(1.01);
+}
+.carousel-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0) 35%, rgba(0,0,0,0.25) 100%);
+}
+
+@media (min-width: 768px) {
+  .carousel-frame { min-height: 340px; }
+}
+html, body, #root {
+  background-color: #F8EDD6;
+  min-height: 100%;
+}
+.page-enter-soft { opacity: 1; transform: translateY(12px) scale(0.995); will-change: transform; animation: pageEnterSoft 900ms cubic-bezier(.22,.61,.36,1) both; }
+.card-enter-soft { opacity: 1; transform: translateY(10px) scale(0.997); will-change: transform; animation: pageEnterSoft 900ms cubic-bezier(.22,.61,.36,1) both; }
+@keyframes pageEnterSoft {
+  0% { transform: translateY(12px) scale(0.995); }
+  100% { transform: translateY(0) scale(1); }
 }

@@ -48,7 +48,7 @@ export default function PaginaInicio({ onEnterApp }) {
 
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden animate-fadeIn" style={{ animationDuration: '300ms', animationFillMode: 'both' }}>
+    <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden page-enter-soft">
       {/* Fondo dinámico con imágenes del carrusel */}
       <div className="absolute inset-0 z-0">
         {carouselImages.map((image, index) => (
@@ -84,20 +84,20 @@ export default function PaginaInicio({ onEnterApp }) {
         </button>
       </div>
 
-      <div className="max-w-4xl w-full flex items-center justify-center relative z-10 animate-fadeInUp" style={{ animationDelay: '0.1s', animationDuration: '700ms', animationFillMode: 'both' }}>
+      <div className="max-w-4xl w-full flex items-center justify-center relative z-10 card-enter-soft">
         
         {/* Sección de Bienvenida y Login centrada */}
-        <div className="text-center space-y-8 bg-white/20 backdrop-blur-md rounded-2xl p-12 border-2 border-[#B78456]/60 shadow-2xl overflow-hidden max-w-2xl w-full animate-fadeInUp" style={{ animationDelay: '0.2s', animationDuration: '700ms', animationFillMode: 'both' }}>
+        <div className="text-center space-y-8 bg-white/20 backdrop-blur-md rounded-2xl p-12 border-2 border-[#B78456]/60 shadow-2xl overflow-hidden max-w-2xl w-full card-enter-soft">
           <div className="space-y-4">
-            <h1 className="text-5xl lg:text-6xl font-extrabold text-white leading-tight drop-shadow-lg overflow-hidden animate-fadeInUp" style={{ animationDelay: '0.3s', animationDuration: '700ms', animationFillMode: 'both' }}>
+            <h1 className="text-5xl lg:text-6xl font-extrabold text-white leading-tight drop-shadow-lg overflow-hidden">
               Bienvenido a <span className="gradient-animated text-outline-elegant text-crisp">Opera</span>
             </h1>
-            <p className="text-base md:text-lg leading-relaxed font-bold tracking-wide text-[#FBDFA2] drop-shadow-[0_2px_8px_rgba(0,0,0,0.55)] text-crisp animate-fadeInUp" style={{ animationDelay: '0.4s', animationDuration: '700ms', animationFillMode: 'both', textShadow: '0 1px 0 rgba(69,34,22,0.45), 0 4px 12px rgba(0,0,0,0.45)' }}>
+            <p className="text-base md:text-lg leading-relaxed font-bold tracking-wide text-[#FBDFA2] drop-shadow-[0_2px_8px_rgba(0,0,0,0.55)] text-crisp" style={{ textShadow: '0 1px 0 rgba(69,34,22,0.45), 0 4px 12px rgba(0,0,0,0.45)' }}>
               Descubre la excelencia en cada detalle. Una experiencia única te espera.
             </p>
           </div>
 
-          <div className="flex justify-center overflow-hidden animate-fadeInUp" style={{ animationDelay: '0.5s', animationDuration: '700ms', animationFillMode: 'both' }}>
+          <div className="flex justify-center overflow-hidden">
              <button
                onClick={async () => {
                  await login(USER_TYPES.VIEWER);

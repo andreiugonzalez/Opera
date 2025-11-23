@@ -19,15 +19,14 @@ export default function PaginaBienvenida({ onContinue }) {
     pie: useRef(null),
   };
 
-  // Estado para controlar las animaciones de entrada
-  const [seccionesVisibles, setSeccionesVisibles] = useState({
-    inicio: false,
-    sobre: false,
-    productos: false,
-    pedidos: false,
-    ubicacion: false,
-    contacto: false,
-    pie: false,
+  const [seccionesVisibles] = useState({
+    inicio: true,
+    sobre: true,
+    productos: true,
+    pedidos: true,
+    ubicacion: true,
+    contacto: true,
+    pie: true,
   });
 
   // Función para manejar el scroll suave con efecto profesional
@@ -38,47 +37,18 @@ export default function PaginaBienvenida({ onContinue }) {
     });
   };
 
-  // Observer para detectar cuando las secciones son visibles
   useEffect(() => {
-    const observerOptions = {
-      root: null,
-      rootMargin: "0px",
-      threshold: 0.25, // Cuando al menos 25% de la sección es visible
-    };
-
-    const handleIntersect = (entries) => {
+    const nodes = Array.from(document.querySelectorAll('[data-reveal]'));
+    const io = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
-        // Identificar qué sección es
-        Object.keys(secciones).forEach((key) => {
-          if (secciones[key].current === entry.target) {
-            if (entry.isIntersecting) {
-              setSeccionesVisibles(prev => ({
-                ...prev,
-                [key]: true
-              }));
-            }
-          }
-        });
-      });
-    };
-
-    const observer = new IntersectionObserver(handleIntersect, observerOptions);
-
-    // Observar todas las secciones
-    Object.values(secciones).forEach((ref) => {
-      if (ref.current) {
-        observer.observe(ref.current);
-      }
-    });
-
-    return () => {
-      // Limpiar el observer cuando el componente se desmonte
-      Object.values(secciones).forEach((ref) => {
-        if (ref.current) {
-          observer.unobserve(ref.current);
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          io.unobserve(entry.target);
         }
       });
-    };
+    }, { threshold: 0.15 });
+    nodes.forEach((n) => io.observe(n));
+    return () => io.disconnect();
   }, []);
 
   // Control de cierre manual del banner de noticia por espectador
@@ -103,6 +73,45 @@ export default function PaginaBienvenida({ onContinue }) {
   // Mantener navbar siempre visible
   useEffect(() => {
     setShowNavbar(true);
+  }, []);
+
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const carouselImages = [
+    '/imagenes/pastel1.jpg',
+    '/imagenes/pastel2.jpg',
+    '/imagenes/pastel3.jpg',
+    '/imagenes/pastel4.jpg',
+    '/imagenes/pastel5.jpg',
+  ];
+  const carouselLen = useRef(carouselImages.length);
+  useEffect(() => {
+    const id = setInterval(() => {
+      setCarouselIndex((prev) => (prev + 1) % carouselLen.current);
+    }, 6000);
+    return () => clearInterval(id);
+  }, []);
+
+  // Al refrescar en esta página, llevar siempre al tope
+  useEffect(() => {
+    let prev = null;
+    try {
+      if (typeof window !== 'undefined' && 'scrollRestoration' in window.history) {
+        prev = window.history.scrollRestoration;
+        window.history.scrollRestoration = 'manual';
+      }
+    } catch {}
+    try {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      document.body.scrollTop = 0;
+      document.documentElement.scrollTop = 0;
+    } catch {}
+    return () => {
+      try {
+        if (typeof window !== 'undefined' && 'scrollRestoration' in window.history && prev) {
+          window.history.scrollRestoration = prev;
+        }
+      } catch {}
+    };
   }, []);
 
   return (
@@ -255,11 +264,11 @@ export default function PaginaBienvenida({ onContinue }) {
         {/* Sección Inicio */}
         <section
           ref={secciones.inicio}
-          className={`w-full h-screen bg-cover bg-center flex flex-col items-center justify-center text-white relative font-serif transition duration-1000 ${seccionesVisibles.inicio ? 'opacity-100' : 'opacity-0'}`}
+          className={`w-full h-screen bg-cover bg-center flex flex-col items-center justify-center text-white relative font-serif appear-page`}
           style={{ backgroundImage: "url('/imagenes/inicio.jpg')" }}
         >
           <div className="absolute inset-0 bg-gradient-to-b from-neutral-900 via-transparent to-neutral-900 opacity-80 transition-opacity duration-700"></div>
-        <div className={`relative text-center w-full px-4 sm:px-6 transition duration-1000 transform ${seccionesVisibles.inicio ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+        <div className={`relative text-center w-full px-4 sm:px-6 reveal-slow`} data-reveal>
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold mb-4 max-w-full break-words overflow-hidden">Bienvenido a Opera</h1>
             <p
               className="text-xl sm:text-2xl md:text-3xl italic tracking-widest select-none text-white"
@@ -273,9 +282,10 @@ export default function PaginaBienvenida({ onContinue }) {
         {/* Sección Sobre Nosotros */}
         <section
           ref={secciones.sobre}
-          className={`w-full py-16 sm:py-20 md:py-24 flex flex-col items-center justify-center bg-[#FBDFA2] px-4 sm:px-6 md:px-10 transition duration-1000 ${seccionesVisibles.sobre ? 'opacity-100' : 'opacity-0'}`}
+          className={`w-full py-16 sm:py-20 md:py-24 flex flex-col items-center justify-center bg-[#FBDFA2] px-4 sm:px-6 md:px-10 reveal-slide-up`}
+          data-reveal
         >
-          <div className={`max-w-4xl text-center text-neutral-900 font-serif transition duration-1000 transform ${seccionesVisibles.sobre ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'} p-6 sm:p-8 card-elegant`}>
+          <div className={`max-w-4xl text-center text-neutral-900 font-serif p-6 sm:p-8 card-elegant reveal-card-elegant`} data-reveal>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 sm:mb-8 underline-elegant">
               Sobre Nosotros
             </h2>
@@ -294,9 +304,10 @@ export default function PaginaBienvenida({ onContinue }) {
         {/* Sección Productos */}
         <section
           ref={secciones.productos}
-          className={`w-full py-16 sm:py-20 md:py-24 flex flex-col md:flex-row items-center justify-center px-4 sm:px-8 md:px-12 gap-8 md:gap-12 bg-white shadow-inner rounded-lg transition duration-1000 ${seccionesVisibles.productos ? 'opacity-100' : 'opacity-0'}`}
+          className={`w-full py-16 sm:py-20 md:py-24 flex flex-col md:flex-row items-center justify-center px-4 sm:px-8 md:px-12 gap-8 md:gap-12 bg-cream-soft shadow-inner rounded-lg reveal-slide-up`}
+          data-reveal
         >
-          <div className={`md:w-1/2 max-w-lg order-1 md:order-1 font-serif transition-all duration-1000 transform ${seccionesVisibles.productos ? 'translate-x-0 opacity-100' : 'translate-x-[-50px] opacity-0'} card-b78356 p-6 rounded-2xl`}>
+          <div className={`md:w-1/2 max-w-lg order-1 md:order-1 font-serif card-b78356 p-6 rounded-2xl reveal-card-elegant`} data-reveal>
             <h2 className="text-3xl sm:text-3xl md:text-4xl font-extrabold mb-4 sm:mb-6 tracking-wide text-[#452216] underline-elegant">
               Explora en nuestros productos
             </h2>
@@ -325,21 +336,28 @@ export default function PaginaBienvenida({ onContinue }) {
               Explorar
             </button>
           </div>
-          <div className={`md:w-1/2 order-2 md:order-2 w-full max-w-full rounded-lg shadow-lg overflow-hidden transition duration-1000 transform hover:scale-105 ${seccionesVisibles.productos ? 'translate-x-0 opacity-100' : 'translate-x-[50px] opacity-0'}`}>
-            <img
-              src="/imagenes/pastel1.jpg"
-              alt="Pastel"
-              className="w-full h-85 "
-            />
+          <div className={`md:w-1/2 order-2 md:order-2 w-full max-w-full rounded-lg shadow-lg overflow-hidden reveal-card-elegant`} data-reveal>
+            <div className="carousel-frame w-full">
+              {carouselImages.map((src, idx) => (
+                <img
+                  key={idx}
+                  src={src}
+                  alt={`Pastel ${idx + 1}`}
+                  className={`carousel-image ${carouselIndex === idx ? 'active' : ''}`}
+                />
+              ))}
+              <div className="carousel-overlay"></div>
+            </div>
           </div>
         </section>
 
         {/* Sección Pedidos */}
         <section
           ref={secciones.pedidos}
-          className={`w-full py-16 sm:py-20 md:py-24 flex flex-col items-center justify-center px-4 sm:px-8 md:px-12 gap-8 md:gap-12 pedidos-hero shadow-lg rounded-2xl transition duration-1000 ${seccionesVisibles.pedidos ? 'opacity-100' : 'opacity-0'}`}
+          className={`w-full py-16 sm:py-20 md:py-24 flex flex-col items-center justify-center px-4 sm:px-8 md:px-12 gap-8 md:gap-12 pedidos-hero shadow-lg rounded-2xl reveal-slide-up`}
+          data-reveal
         >
-          <div className={`max-w-3xl text-center font-serif transition duration-1000 transform ${seccionesVisibles.pedidos ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+          <div className={`max-w-3xl text-center font-serif`}>
             <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight pedidos-title-sheen-dark drop-shadow-sm leading-tight mb-2 underline-elegant">
               Haz tu pedido de tortas
             </h2>
@@ -349,22 +367,22 @@ export default function PaginaBienvenida({ onContinue }) {
             </p>
           </div>
 
-         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl w-full mx-auto pedidos-grid">
-  <div className="pedidos-card btn-sheen overflow-hidden flex items-center justify-center transition duration-700">
+         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl w-full mx-auto pedidos-grid reveal-stagger" data-reveal>
+  <div className="pedidos-card btn-sheen overflow-hidden flex items-center justify-center transition duration-700 reveal-card-elegant" data-reveal>
     <img
       src="/imagenes/torta1.jpg"
       alt="Torta 1"
       className="aspect-square w-full h-auto object-cover cake-photo"
     />
   </div>
-  <div className="pedidos-card btn-sheen overflow-hidden flex items-center justify-center transition duration-700">
+  <div className="pedidos-card btn-sheen overflow-hidden flex items-center justify-center transition duration-700 reveal-card-elegant" data-reveal>
     <img
       src="/imagenes/torta2.jpg"
       alt="Torta 2"
       className="aspect-square w-full h-auto object-cover cake-photo"
     />
   </div>
-  <div className="pedidos-card btn-sheen overflow-hidden flex items-center justify-center transition duration-700">
+  <div className="pedidos-card btn-sheen overflow-hidden flex items-center justify-center transition duration-700 reveal-card-elegant" data-reveal>
     <img
       src="/imagenes/torta4.jpg"
       alt="Torta 3"
@@ -375,7 +393,7 @@ export default function PaginaBienvenida({ onContinue }) {
 
           <button
             onClick={() => navigate("/pedido")}
-            className={`mt-10 px-8 py-4 rounded-lg font-semibold transition duration-500 shadow-md hover:shadow-lg transform hover:-translate-y-1 btn-hover-elegant btn-floating-elegant-783719 active:scale-95 ${seccionesVisibles.pedidos ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
+            className={`mt-10 px-8 py-4 rounded-lg font-semibold transition duration-500 shadow-md hover:shadow-lg transform hover:-translate-y-1 btn-hover-elegant btn-floating-elegant-783719 active:scale-95`}
           >
             Solicitar pedido
           </button>
@@ -384,10 +402,11 @@ export default function PaginaBienvenida({ onContinue }) {
         {/* Sección Ubicación y Contacto en grid: móvil Ubicación → Foto → Contacto */}
         <section
           ref={secciones.ubicacion}
-          className={`w-full py-16 sm:py-20 md:py-24 grid grid-cols-1 md:grid-cols-2 md:auto-rows-min gap-6 md:gap-x-12 md:gap-y-8 items-start justify-center px-4 sm:px-8 md:px-12 bg-cream-soft text-neutral-900 shadow-inner rounded-2xl transition duration-1000 ${seccionesVisibles.ubicacion ? 'opacity-100' : 'opacity-0'}`}
+          className={`w-full py-16 sm:py-20 md:py-24 grid grid-cols-1 md:grid-cols-2 md:auto-rows-min gap-6 md:gap-x-12 md:gap-y-8 items-start justify-center px-4 sm:px-8 md:px-12 bg-cream-soft text-neutral-900 shadow-inner rounded-2xl reveal-slide-up`}
+          data-reveal
         >
           {/* Información de Ubicación (columna derecha en desktop) */}
-          <div className={`w-full md:col-start-2 md:row-start-1 max-w-3xl font-serif text-center md:text-left px-4 sm:px-6 md:px-8 lg:px-16 md:flex md:flex-col md:justify-center md:self-center transition duration-1000 transform ${seccionesVisibles.ubicacion ? 'translate-x-0 opacity-100' : 'translate-x-[50px] opacity-0'} card-luminous-amber rounded-2xl`}>
+          <div className={`w-full md:col-start-2 md:row-start-1 max-w-3xl font-serif text-center md:text-left px-4 sm:px-6 md:px-8 lg:px-16 md:flex md:flex-col md:justify-center md:self-center card-luminous-amber rounded-2xl reveal-card-elegant`} data-reveal>
             <h2 className="text-3xl sm:text-3xl md:text-4xl font-extrabold mb-2 tracking-wide text-amber-strong text-crisp underline-left-elegant">
               Ubicación
             </h2>
@@ -435,7 +454,7 @@ export default function PaginaBienvenida({ onContinue }) {
 
       {/* Footer */}
       {/* Contacto a ancho completo */}
-      <section ref={secciones.contacto} className={`w-full py-16 sm:py-20 md:py-24 flex flex-col items-center justify-center bg-[#FBDFA2] px-4 sm:px-6 md:px-10 transition-all duration-700 ${seccionesVisibles.contacto ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+      <section ref={secciones.contacto} className={`w-full pt-16 sm:pt-20 md:pt-24 pb-14 sm:pb-16 md:pb-20 flex flex-col items-center justify-center bg-[#FBDFA2] px-4 sm:px-6 md:px-10 transition-all duration-700 ${seccionesVisibles.contacto ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
         <div className={`max-w-4xl w-full text-center text-neutral-900 font-serif mx-auto`}>
           <h2 className="text-3xl sm:text-4xl font-bold mb-6 underline-elegant">
             Contacto
@@ -454,7 +473,8 @@ export default function PaginaBienvenida({ onContinue }) {
             rel="noopener noreferrer"
             aria-label="WhatsApp"
             title="Contactar por WhatsApp"
-          className="group block card-elegant p-5"
+          className="group block card-elegant p-5 reveal-card-elegant"
+          data-reveal
           >
             <div className="flex items-center gap-4 justify-center sm:justify-start">
               <div className="text-4xl leading-none text-amber-700 group-hover:text-green-600 transition-colors">📱</div>
@@ -472,7 +492,8 @@ export default function PaginaBienvenida({ onContinue }) {
             rel="noopener noreferrer"
             aria-label="Instagram"
             title="Ver en Instagram"
-          className="group block card-elegant p-5"
+          className="group block card-elegant p-5 reveal-card-elegant"
+          data-reveal
           >
             <div className="flex items-center gap-4 justify-center sm:justify-start">
               <div className="text-4xl leading-none text-amber-700 group-hover:text-pink-600 transition-colors">📸</div>
@@ -487,7 +508,8 @@ export default function PaginaBienvenida({ onContinue }) {
           <div
             aria-label="Correo Electrónico"
             title="Copiar correo"
-          className="group block card-elegant p-5"
+          className="group block card-elegant p-5 reveal-card-elegant"
+          data-reveal
           >
             <div className="flex items-center gap-4 justify-center sm:justify-start">
               <div className="text-4xl leading-none text-amber-700 group-hover:text-neutral-700 transition-colors">✉️</div>
@@ -510,7 +532,7 @@ export default function PaginaBienvenida({ onContinue }) {
           </div>
         </div>
       </section>
-      <footer ref={secciones.pie} className={`relative overflow-hidden bg-[#783719]/80 text-[#F8EDD6] py-4 sm:py-6 mt-8 sm:mt-12 text-center font-mono tracking-wide shadow-inner transition-all duration-700 backdrop-blur-sm footer-elegant ${seccionesVisibles.pie ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}>
+      <footer ref={secciones.pie} className={`relative overflow-hidden bg-[#783719]/80 text-[#F8EDD6] py-4 sm:py-6 mt-0 text-center font-mono tracking-wide shadow-inner transition-all duration-700 backdrop-blur-sm footer-elegant ${seccionesVisibles.pie ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}>
         {/* Fade superior sutil */}
         <div className="pointer-events-none absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-[#F8EDD6]/40 to-transparent opacity-50"></div>
         {/* Línea luminosa suave con animación */}

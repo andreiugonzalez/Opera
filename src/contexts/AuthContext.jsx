@@ -150,9 +150,6 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem('opera_user');
       localStorage.removeItem('opera_token');
       setShouldResetApp(true);
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 100);
     });
   };
 
