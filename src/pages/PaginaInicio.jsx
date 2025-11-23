@@ -48,7 +48,7 @@ export default function PaginaInicio({ onEnterApp }) {
 
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden page-enter-soft">
+    <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden">
       {/* Fondo dinámico con imágenes del carrusel */}
       <div className="absolute inset-0 z-0">
         {carouselImages.map((image, index) => (
@@ -73,7 +73,7 @@ export default function PaginaInicio({ onEnterApp }) {
             }
           }}
           onDoubleClick={() => setShowLogin(true)}
-          className={`cursor-pointer transition-transform duration-200 hover:scale-105`}
+          className={`cursor-pointer transition-transform duration-200 hover:scale-105 logo-button-sheen logo-polish`}
           title="Doble clic para acceder al formulario de administrador"
         >
           <img 
@@ -84,10 +84,10 @@ export default function PaginaInicio({ onEnterApp }) {
         </button>
       </div>
 
-      <div className="max-w-4xl w-full flex items-center justify-center relative z-10 card-enter-soft">
+      <div className="max-w-4xl w-full flex items-center justify-center relative z-10 reveal-card-elegant is-visible">
         
         {/* Sección de Bienvenida y Login centrada */}
-        <div className="text-center space-y-8 bg-white/20 backdrop-blur-md rounded-2xl p-12 border-2 border-[#B78456]/60 shadow-2xl overflow-hidden max-w-2xl w-full card-enter-soft">
+        <div className="text-center space-y-8 bg-white/20 backdrop-blur-md rounded-2xl p-12 border-2 border-[#B78456]/60 shadow-2xl overflow-hidden max-w-2xl w-full reveal-card-elegant is-visible">
           <div className="space-y-4">
             <h1 className="text-5xl lg:text-6xl font-extrabold text-white leading-tight drop-shadow-lg overflow-hidden">
               Bienvenido a <span className="gradient-animated text-outline-elegant text-crisp">Opera</span>
@@ -107,7 +107,7 @@ export default function PaginaInicio({ onEnterApp }) {
                }}
             className="px-12 py-6 bg-[#783719] hover:bg-[#5f2d14] text-white text-2xl font-bold rounded-2xl transition-all duration-200 shadow-2xl hover:shadow-3xl border-2 border-[#783719]/40 backdrop-blur-sm transform hover:scale-105"
              >
-               Acceso Espectador
+               Ingresar
              </button>
            </div>
         </div>

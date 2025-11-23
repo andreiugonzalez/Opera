@@ -1147,3 +1147,34 @@ html, body, #root {
   0% { transform: translateY(12px) scale(0.995); }
   100% { transform: translateY(0) scale(1); }
 }
+.page-polish { will-change: filter; animation: pagePolish 900ms ease both; }
+.card-polish { will-change: filter; animation: cardPolish 900ms ease both; }
+@keyframes pagePolish { 0% { filter: brightness(0.98) contrast(0.98) saturate(1.02); } 100% { filter: none; } }
+@keyframes cardPolish { 0% { filter: brightness(0.98) contrast(0.98) saturate(1.02); } 100% { filter: none; } }
+
+.logo-polish { will-change: transform, filter; animation: logoPolish 900ms ease both; }
+@keyframes logoPolish { 0% { transform: scale(0.96); filter: brightness(0.96) contrast(1.02); } 100% { transform: scale(1); filter: none; } }
+
+.logo-button-sheen { position: relative; overflow: hidden; }
+.logo-button-sheen::after { content:""; position:absolute; inset:-3px; background-image: linear-gradient(120deg, rgba(255,255,255,0) 40%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0) 60%); background-size: 300% 300%; background-position: -150% 50%; opacity: 0; pointer-events: none; transition: opacity 200ms ease; }
+.logo-button-sheen:hover::after { opacity: 0.85; animation: logoSheenMove 1.6s ease-in-out forwards; }
+@keyframes logoSheenMove { 0% { background-position: -150% 50%; } 100% { background-position: 150% 50%; } }
+html {
+  scrollbar-color: #783719 #F8EDD6;
+  scrollbar-width: thin;
+}
+*::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+*::-webkit-scrollbar-track {
+  background: #F8EDD6;
+}
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #5f2d14 0%, #783719 60%, #B78456 100%);
+  border-radius: 12px;
+  border: 2px solid #F8EDD6;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #6b3118 0%, #8a4121 60%, #c18d66 100%);
+}
