@@ -54,7 +54,7 @@ export default function SobreNosotrosDetalle() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#f0d8b5] font-serif px-6 py-12 relative">
+    <div className="min-h-screen bg-[#f0d8b5] font-serif px-6 py-12 relative about-page">
       {/* Flecha de navegación hacia atrás */}
       <button
         onClick={() => navigate("/")}
@@ -75,7 +75,7 @@ export default function SobreNosotrosDetalle() {
           />
         </svg>
       </button>
-      <header className="max-w-4xl mx-auto text-center mb-10">
+      <header className="max-w-4xl mx-auto text-center mb-10 about-header">
         <h1 className="text-5xl font-extrabold text-[#783719] text-crisp mb-6 underline-elegant">
           Sobre Nosotros
         </h1>
@@ -106,13 +106,13 @@ export default function SobreNosotrosDetalle() {
 
       {/* (Se retiraron los gráficos de Producción mensual y Preferencias de sabores a solicitud) */}
 
-      <section className="max-w-9xl mx-auto grid gap-12 md:grid-cols-3 fade-in-strong stagger-children-strong">
-        {actividades.map(({ titulo, descripcion, imagen }) => (
+      <section className="max-w-9xl mx-auto grid gap-12 sm:grid-cols-2 lg:grid-cols-3 fade-in-up about-grid-charts">
+        {actividades.map(({ titulo, descripcion, imagen }, idx) => (
           <article
             key={titulo}
-            className="bg-white rounded-xl border border-amber-200/60 shadow-[0_8px_24px_rgba(120,55,25,0.12)] overflow-hidden transform transition-all duration-300 hover:shadow-[0_12px_36px_rgba(120,55,25,0.18)] hover:scale-105 float-card"
+            className={`bg-white rounded-xl border border-amber-200/60 shadow-[0_8px_24px_rgba(120,55,25,0.12)] overflow-hidden transform transition-all duration-300 hover:shadow-[0_12px_36px_rgba(120,55,25,0.18)] hover:scale-105 float-card about-card ${idx === 2 ? 'about-card-feature fade-in-up reveal-card-elegant is-visible' : 'reveal-card-elegant is-visible'}`}
           >
-            <div className="bg-gradient-to-br from-amber-100 to-amber-200 p-3 rounded-t-xl ring-1 ring-[#783719]/25 flex items-center justify-center">
+            <div className="bg-gradient-to-br from-amber-100 to-amber-200 p-3 rounded-t-xl ring-1 ring-[#783719]/25 flex items-center justify-center about-card-media">
               <img
                 src={imagen}
                 alt={titulo}
@@ -121,7 +121,7 @@ export default function SobreNosotrosDetalle() {
                 decoding="async"
               />
             </div>
-            <div className="p-6">
+            <div className="p-6 about-card-body">
               <h2 className="text-2xl font-bold text-[#783719] text-crisp mb-3">
                 {titulo}
               </h2>

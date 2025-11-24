@@ -345,9 +345,14 @@ main, div, section {
 
 /* Respetar motion reducido también en nuevas utilidades */
 @media (prefers-reduced-motion: reduce) {
-  .float-card, .stagger-children-strong > *, .delay-150, .delay-300, .delay-450, .delay-600 {
+  .float-card,
+  .stagger-children-strong > *,
+  .stagger-children-soft > *,
+  .delay-150, .delay-300, .delay-450, .delay-600 {
     animation: none !important;
     transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
     filter: none !important;
   }
 }
@@ -746,6 +751,54 @@ main, div, section {
   transform: translateY(-1px);
   filter: brightness(1.06);
 }
+
+/* Responsivo específico para pantallas de baja altura (ej. 1024x600) en Sobre Nosotros */
+@media (max-height: 600px) and (min-width: 900px) {
+  .about-page { padding-top: 8px !important; padding-bottom: 8px !important; overflow-y: auto; }
+  .about-header { margin-bottom: 12px !important; }
+  .about-grid-charts { grid-template-columns: repeat(2, minmax(0,1fr)) !important; gap: 16px !important; min-height: 320px; }
+  /* Desactivar animaciones generales, pero permitir en la tarjeta destacada */
+  .about-grid-charts > *:not(.about-card-feature),
+  .about-grid-charts > *:not(.about-card-feature) * { animation: none !important; opacity: 1 !important; transform: none !important; }
+  .about-card-feature { grid-column: 1 / -1; justify-self: center; max-width: 560px; }
+  .about-card img { max-height: 160px !important; }
+  .about-card .p-6 { padding: 12px !important; }
+  .about-card .text-2xl { font-size: 1.25rem !important; }
+  .about-card { box-shadow: 0 6px 18px rgba(120,55,25,0.12) !important; }
+}
+
+/* Responsivo móvil para "Sobre la pastelería" */
+@media (max-width: 640px) {
+  .about-page { padding-top: 12px !important; padding-bottom: 12px !important; overflow-y: auto; }
+  .about-header { margin-bottom: 10px !important; }
+  .about-grid-charts { grid-template-columns: 1fr !important; gap: 12px !important; }
+  .about-grid-charts > * { animation: none !important; opacity: 1 !important; transform: none !important; }
+  .about-card img { max-height: 180px !important; width: 100% !important; object-fit: contain !important; }
+  .about-card .p-6 { padding: 12px !important; }
+  .about-card .text-2xl { font-size: 1.125rem !important; }
+  .float-card { animation: none !important; }
+}
+
+/* Tablet/anchas: centrar tarjeta temática y mantener 2 columnas */
+@media (min-width: 768px) and (max-width: 1279px) {
+  .about-card-feature { grid-column: 1 / -1; justify-self: center; max-width: 640px; }
+}
+
+/* En 1280px de ancho exacto, no centrar: mantener 3 columnas uniformes */
+@media (min-width: 1280px) and (max-width: 1280px) {
+  .about-card-feature { grid-column: auto; justify-self: auto; max-width: none; }
+}
+
+/* Igualar alturas de tarjetas en Sobre la pastelería */
+.about-grid-charts { align-items: stretch; }
+.about-card { display: flex; flex-direction: column; height: 100%; }
+.about-card-media { height: 240px; }
+@media (min-width: 640px) { .about-card-media { height: 280px; } }
+@media (min-width: 1024px) { .about-card-media { height: 300px; } }
+.about-card-media img { max-height: 100% !important; width: 100% !important; object-fit: contain !important; }
+.about-card-body { min-height: 180px; }
+@media (min-width: 640px) { .about-card-body { min-height: 200px; } }
+@media (min-width: 1024px) { .about-card-body { min-height: 220px; } }
 
 /* Combina bien con btn-sheen (brillo diagonal) */
 .btn-floating-452216.btn-sheen {
