@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 export default function SobreMi() {
   const navigate = useNavigate();
   return (
-    <div className="min-h-screen md:h-screen overflow-y-auto md:overflow-hidden bg-[#f0d8b5] font-serif px-4 sm:px-6 py-6 sm:py-8 fade-in-strong">
+    <div className="min-h-screen md:h-screen overflow-y-auto md:overflow-y-auto bg-[#f0d8b5] font-serif px-4 sm:px-6 py-6 sm:py-8 fade-in-strong">
       <button
         onClick={() => navigate('/sobrenosotros')}
         className="fixed top-6 left-6 z-50 btn-back-783719 btn-sheen"
@@ -40,7 +40,7 @@ export default function SobreMi() {
         </div>
       </header>
 
-      <section className="max-w-5xl mx-auto px-2 sm:px-4 h-auto md:h-[calc(100vh-230px)] fade-in-strong">
+      <section className="max-w-5xl mx-auto px-2 sm:px-4 h-auto md:min-h-[calc(100vh-230px)] fade-in-strong">
         <div className="card-elegant bg-[#f8edd6] rounded-3xl border border-amber-200 shadow-[0_8px_24px_rgba(120,55,25,0.12)] hover:shadow-[0_12px_36px_rgba(120,55,25,0.18)] h-full flex flex-col fade-in-up-strong float-card">
           <div className="card-header p-4 sm:p-5 bg-[#f8edd6] border-b border-amber-200/60">
             <h2 className="text-2xl sm:text-3xl font-extrabold text-white inline-block bg-[#b78456] px-4 py-2 rounded-xl shadow-sm">Constanza Zurita Alveal</h2>

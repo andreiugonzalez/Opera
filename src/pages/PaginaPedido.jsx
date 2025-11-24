@@ -520,13 +520,36 @@ export default function PaginaPedido() {
         </div>
       ), document.body)}
       */}
-      <h1 className="text-5xl font-extrabold mb-10 text-center underline-elegant" style={{ color: '#F8EDD6' }}>
+      <h1 className="text-5xl font-extrabold mb-10 text-center underline-elegant fade-in-up reveal-card-elegant is-visible" style={{ color: '#F8EDD6' }}>
         Solicitar Pedido
       </h1>
 
+      <button
+        onClick={() => {
+          if (step === 2) {
+            setStep(1);
+          } else {
+            navigate("/");
+          }
+        }}
+        className="fixed top-4 sm:top-6 left-2 sm:left-6 z-50 btn-back-783719 btn-sheen"
+        aria-label="Volver"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-6 w-6 text-white"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+
       {/* Paso 1: Carrusel seleccionable */}
       {step === 1 && (
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto fade-in-up fade-in-zoom page-enter-soft page-polish">
           {/* Botones superiores: Volver, Añadir (admin) y Ver tortas disponibles */}
           <div className="flex flex-col sm:flex-row items-center gap-2 justify-end mb-4 md:absolute md:top-6 md:right-6">
             {isAdmin() && (
@@ -558,34 +581,11 @@ export default function PaginaPedido() {
               </button>
             )}
           </div>
-          {/* Botón Volver con estilo circular y brillo 783719 */}
-          <button
-            onClick={() => {
-              if (step === 2) {
-                setStep(1);
-              } else {
-                navigate("/");
-              }
-            }}
-            className="fixed top-4 sm:top-6 left-2 sm:left-6 z-50 btn-back-783719 btn-sheen"
-            aria-label="Volver a inicio"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 text-white"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <div className="relative w-full rounded-2xl shadow-2xl overflow-hidden"
+          <div className="relative w-full rounded-2xl shadow-2xl overflow-hidden card-enter-soft card-polish fade-in-up fade-in-zoom reveal-card-elegant is-visible"
                style={{ backgroundColor: '#452216', boxShadow: '0 20px 40px rgba(0,0,0,0.35)' }}>
-            <div className="grid grid-cols-1 md:grid-cols-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 fade-in-up stagger-children-soft">
               {/* Panel de texto a la izquierda */}
-              <div className="order-2 md:order-1 p-6 md:p-8 flex flex-col justify-center items-center text-center">
+              <div className="order-2 md:order-1 p-6 md:p-8 flex flex-col justify-center items-center text-center stagger-children-soft reveal-card-elegant is-visible">
                 <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white leading-tight mb-4 px-4 py-2 rounded-lg"
                     style={{ backgroundColor: '#783719', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25), 0 8px 16px rgba(0,0,0,0.35)', letterSpacing: '0.5px' }}>
                   {selectedTitle}
@@ -615,7 +615,7 @@ export default function PaginaPedido() {
               </div>
 
               {/* Imagen a la derecha */}
-              <div className="order-1 md:order-2 relative flex items-center justify-center p-4 md:p-6"
+              <div className="order-1 md:order-2 relative flex items-center justify-center p-4 md:p-6 reveal-card-elegant is-visible"
                    style={{ backgroundColor: '#452216' }}>
                 <div className="w-full h-[260px] sm:h-[300px] md:w-[640px] md:h-[430px] rounded-xl overflow-hidden flex items-center justify-center border border-[#783719]/40 shadow-lg">
                   <img
@@ -899,258 +899,261 @@ export default function PaginaPedido() {
         </div>
       ), document.body)}
 
-      {/* Paso 2: Formulario */}
+      {/* Paso 2: Formulario con preview en 2 columnas */}
       {step === 2 && (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-6 max-w-xl mx-auto rounded-xl shadow-xl border-2 p-6 relative float-subtle"
-          style={{ backgroundImage: 'linear-gradient(180deg, #8B5E3C 0%, #6E3A22 100%)', borderColor: '#B78456', boxShadow: '0 12px 28px rgba(0,0,0,0.35)' }}>
-          <div className="flex items-center justify-center gap-4 text-center">
-            <img
-              src={selectedImage}
-              alt={selectedTitle}
-              className="w-24 h-24 object-cover rounded-lg cursor-zoom-in"
-              onClick={openPreview}
-            />
-            <div>
-              <p className="text-sm" style={{ color: '#FBDFA2' }}>Torta seleccionada</p>
-              <p className="font-semibold break-all" style={{ color: '#F8EDD6' }}>{selectedTitle}</p>
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 items-start page-enter-soft page-polish fade-in-up fade-in-zoom stagger-children-soft reveal-card-elegant is-visible">
+          <aside className="w-full rounded-xl shadow-xl border-2 p-6 relative card-enter-soft card-polish fade-in-up fade-in-zoom reveal-card-elegant is-visible"
+            style={{ backgroundImage: 'linear-gradient(180deg, #F8EDD6 0%, #EED3A1 100%)', borderColor: '#B78456', boxShadow: '0 12px 28px rgba(0,0,0,0.25)' }}>
+            <div className="mb-3">
+              <p className="text-sm font-semibold" style={{ color: '#783719' }}>Vista de la torta</p>
+              <h3 className="text-xl font-extrabold" style={{ color: '#783719' }}>{selectedTitle || 'Torta seleccionada'}</h3>
               {selectedPrice ? (
-                <p className="font-semibold" style={{ color: '#FBDFA2' }}>${formatChileanPrice(selectedPrice)}</p>
+                <p className="font-semibold" style={{ color: '#B78456' }}>${formatChileanPrice(selectedPrice)}</p>
               ) : null}
             </div>
-          </div>
+            <div className="w-full rounded-xl overflow-hidden border bg-white/10" style={{ borderColor: '#B78456' }}>
+              <img src={selectedImage} alt={selectedTitle} className="w-full h-[380px] md:h-[460px] object-contain" />
+            </div>
+            <div className="flex justify-center mt-4">
+              <button type="button" onClick={openPreview} className="px-4 py-2 rounded-full font-semibold btn-sheen" style={{ backgroundColor: '#B78456', color: '#452216' }}>Ver en grande</button>
+            </div>
+          </aside>
 
-          {/* Nombre completo */}
-          <div className="group">
-            <label htmlFor="nombreCompleto" className="block text-sm font-semibold tracking-wide" style={{ color: '#F8EDD6' }}>
-              Nombre completo
-            </label>
-            <div className="h-[2px] w-16 rounded-full mb-2" style={{ backgroundColor: '#E3C08C' }}></div>
-            <input
-              id="nombreCompleto"
-              type="text"
-              maxLength={35}
-              className="w-full p-3 rounded-lg border focus:outline-none focus:ring-2"
-              style={{ borderColor: '#E3C08C', backgroundColor: '#F8EDD6' + '14', color: '#F8EDD6' }}
-              value={nombreCompleto}
-              onChange={handleNombreCompletoChange}
-              pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñÜü' \-]{2,}$"
-              title="Hasta 35 caracteres. Solo letras, espacios, apóstrofes y guiones"
-              required
-            />
-          </div>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-6 w-full rounded-xl shadow-xl border-2 p-6 relative card-enter-soft card-polish fade-in-up fade-in-zoom reveal-card-elegant is-visible"
+            style={{ backgroundImage: 'linear-gradient(180deg, #8B5E3C 0%, #6E3A22 100%)', borderColor: '#B78456', boxShadow: '0 12px 28px rgba(0,0,0,0.35)' }}>
+            <div className="stagger-children-soft">
 
-          {/* Teléfono */}
-          <div className="group">
-            <label htmlFor="telefono" className="block text-sm font-semibold tracking-wide" style={{ color: '#F8EDD6' }}>
-              Teléfono
-            </label>
-            <div className="h-[2px] w-14 rounded-full mb-2" style={{ backgroundColor: '#E3C08C' }}></div>
-            <input
-              id="telefono"
-              type="tel"
-              inputMode="numeric"
-              className="w-full p-3 rounded-lg border focus:outline-none focus:ring-2"
-              style={{ borderColor: '#E3C08C', backgroundColor: '#F8EDD6' + '14', color: '#F8EDD6' }}
-              value={telefono}
-              onChange={handleTelefonoChange}
-              pattern="^[0-9]{8,12}$"
-              title="Solo números, 8 a 12 dígitos"
-              required
-            />
-          </div>
+            {/* Nombre completo */}
+            <div className="group">
+              <label htmlFor="nombreCompleto" className="block text-sm font-semibold tracking-wide" style={{ color: '#F8EDD6' }}>
+                Nombre completo
+              </label>
+              <div className="h-[2px] w-16 rounded-full mb-2" style={{ backgroundColor: '#E3C08C' }}></div>
+              <input
+                id="nombreCompleto"
+                type="text"
+                maxLength={35}
+                className="w-full p-3 rounded-lg border focus:outline-none focus:ring-2"
+                style={{ borderColor: '#E3C08C', backgroundColor: '#F8EDD6' + '14', color: '#F8EDD6' }}
+                value={nombreCompleto}
+                onChange={handleNombreCompletoChange}
+                pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñÜü' \-]{2,}$"
+                title="Hasta 35 caracteres. Solo letras, espacios, apóstrofes y guiones"
+                required
+              />
+            </div>
 
-          {/* Fecha y hora (solo PM) */}
-          <div className="group">
-            <label className="block text-sm font-semibold tracking-wide" style={{ color: '#F8EDD6' }}>
-              Fecha y hora del pedido (solo PM)
-            </label>
-            <div className="h-[2px] w-44 rounded-full mb-2" style={{ backgroundColor: '#E3C08C' }}></div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label htmlFor="fechaDia" className="sr-only">Fecha</label>
-                <Flatpickr
-                  id="fechaDia"
-                  options={{
-                    locale: Spanish,
-                    dateFormat: "Y-m-d",
-                    altInput: true,
-                    altFormat: "d/m/Y",
-                    minDate: (() => { const today = new Date(); today.setHours(0,0,0,0); const min = new Date(today); min.setDate(today.getDate() + 3); return min; })(),
-                    disable: [
-                      function(date) { return date.getDay() === 0 || date.getDay() === 6 || isHoliday(date); },
-                    ],
-                  }}
-                  className="w-full p-3 rounded-lg border focus:outline-none focus:ring-2"
-                  style={{ borderColor: '#E3C08C', backgroundColor: '#F8EDD6' + '14', color: '#F8EDD6' }}
-                  value={fechaDia}
-                  placeholder="Selecciona fecha (dd/mm/aaaa)"
-                  onReady={(selectedDates, dateStr, instance) => {
-                    if (instance?.altInput) {
-                      instance.altInput.placeholder = 'Selecciona fecha (dd/mm/aaaa)';
-                      // Aplicar estilos coherentes con el resto de inputs
-                      instance.altInput.className = 'w-full p-3 rounded-lg border focus:outline-none focus:ring-2 datepicker-input';
-                      instance.altInput.style.borderColor = '#E3C08C';
-                      instance.altInput.style.backgroundColor = '#F8EDD6' + '14';
-                      instance.altInput.style.color = '#452216';
-                      instance.altInput.style.caretColor = '#F8EDD6';
-                    }
-                  }}
-                  onChange={(dates, str, instance) => {
-                    // Asegurar que el input real reciba el mensaje de validación
-                    const target = instance?.input ?? { value: str, setCustomValidity: () => {} };
-                    target.value = str;
-                    handleFechaChange({ target });
-                  }}
-                  required
-                />
+            {/* Teléfono */}
+            <div className="group">
+              <label htmlFor="telefono" className="block text-sm font-semibold tracking-wide" style={{ color: '#F8EDD6' }}>
+                Teléfono
+              </label>
+              <div className="h-[2px] w-14 rounded-full mb-2" style={{ backgroundColor: '#E3C08C' }}></div>
+              <input
+                id="telefono"
+                type="tel"
+                inputMode="numeric"
+                className="w-full p-3 rounded-lg border focus:outline-none focus:ring-2"
+                style={{ borderColor: '#E3C08C', backgroundColor: '#F8EDD6' + '14', color: '#F8EDD6' }}
+                value={telefono}
+                onChange={handleTelefonoChange}
+                pattern="^[0-9]{8,12}$"
+                title="Solo números, 8 a 12 dígitos"
+                required
+              />
+            </div>
+
+            {/* Fecha y hora (solo PM) */}
+            <div className="group">
+              <label className="block text-sm font-semibold tracking-wide" style={{ color: '#F8EDD6' }}>
+                Fecha y hora del pedido (solo PM)
+              </label>
+              <div className="h-[2px] w-44 rounded-full mb-2" style={{ backgroundColor: '#E3C08C' }}></div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="fechaDia" className="sr-only">Fecha</label>
+                  <Flatpickr
+                    id="fechaDia"
+                    options={{
+                      locale: Spanish,
+                      dateFormat: "Y-m-d",
+                      altInput: true,
+                      altFormat: "d/m/Y",
+                      minDate: (() => { const today = new Date(); today.setHours(0,0,0,0); const min = new Date(today); min.setDate(today.getDate() + 3); return min; })(),
+                      disable: [
+                        function(date) { return date.getDay() === 0 || date.getDay() === 6 || isHoliday(date); },
+                      ],
+                    }}
+                    className="w-full p-3 rounded-lg border focus:outline-none focus:ring-2"
+                    style={{ borderColor: '#E3C08C', backgroundColor: '#F8EDD6' + '14', color: '#F8EDD6' }}
+                    value={fechaDia}
+                    placeholder="Selecciona fecha (dd/mm/aaaa)"
+                    onReady={(selectedDates, dateStr, instance) => {
+                      if (instance?.altInput) {
+                        instance.altInput.placeholder = 'Selecciona fecha (dd/mm/aaaa)';
+                        instance.altInput.className = 'w-full p-3 rounded-lg border focus:outline-none focus:ring-2 datepicker-input';
+                        instance.altInput.style.borderColor = '#E3C08C';
+                        instance.altInput.style.backgroundColor = '#F8EDD6' + '14';
+                        instance.altInput.style.color = '#452216';
+                        instance.altInput.style.caretColor = '#F8EDD6';
+                      }
+                    }}
+                    onChange={(dates, str, instance) => {
+                      const target = instance?.input ?? { value: str, setCustomValidity: () => {} };
+                      target.value = str;
+                      handleFechaChange({ target });
+                    }}
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="horaDia" className="sr-only">Hora (PM)</label>
+                  <select
+                    id="horaDia"
+                    className="w-full p-3 rounded-lg border focus:outline-none focus:ring-2"
+                    style={{ borderColor: '#E3C08C', backgroundColor: '#F8EDD6' + '14', color: '#F8EDD6' }}
+                    value={horaDia}
+                    onChange={handleHoraChange}
+                    title="Solo horario PM: 16:30 a 19:30"
+                    required
+                  >
+                    <option value="" disabled style={{ color: '#452216' }}>Selecciona hora (PM)</option>
+                    {['16:30','16:45','17:00','17:15','17:30','17:45','18:00','18:15','18:30','18:45','19:00','19:15','19:30'].map(t => (
+                      <option key={t} value={t} style={{ color: '#452216' }}>{t}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
-              <div>
-                <label htmlFor="horaDia" className="sr-only">Hora (PM)</label>
-                <select
-                  id="horaDia"
-                  className="w-full p-3 rounded-lg border focus:outline-none focus:ring-2"
-                  style={{ borderColor: '#E3C08C', backgroundColor: '#F8EDD6' + '14', color: '#F8EDD6' }}
-                  value={horaDia}
-                  onChange={handleHoraChange}
-                  title="Solo horario PM: 16:30 a 19:30"
-                  required
+              <p className="mt-1 text-xs" style={{ color: '#EED3A1' }}>Horario permitido: Lunes a viernes, de 4:30 pm a 7:30 pm (solo PM). Feriados excluidos.</p>
+            </div>
+
+            {/* A nombre de */}
+            <div className="group">
+              <label htmlFor="aNombreDe" className="block text-sm font-semibold tracking-wide" style={{ color: '#F8EDD6' }}>
+                A nombre de quién es el pedido
+              </label>
+              <div className="h-[2px] w-24 rounded-full mb-2" style={{ backgroundColor: '#E3C08C' }}></div>
+              <input
+                id="aNombreDe"
+                type="text"
+                maxLength={35}
+                className="w-full p-3 rounded-lg border focus:outline-none focus:ring-2"
+                style={{ borderColor: '#E3C08C', backgroundColor: '#F8EDD6' + '14', color: '#F8EDD6' }}
+                value={aNombreDe}
+                onChange={handleANombreDeChange}
+                pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñÜü' \-]{2,}$"
+                title="Hasta 35 caracteres. Solo letras, espacios, apóstrofes y guiones"
+                required
+              />
+            </div>
+
+            {/* Centímetros */}
+            <div className="group">
+              <label htmlFor="centimetros" className="block text-sm font-semibold tracking-wide" style={{ color: '#F8EDD6' }}>
+                Centímetros de la torta
+              </label>
+              <div className="h-[2px] w-24 rounded-full mb-2" style={{ backgroundColor: '#E3C08C' }}></div>
+              <input
+                id="centimetros"
+                type="number"
+                min="1"
+                max="99"
+                className="w-full p-3 rounded-lg border focus:outline-none focus:ring-2"
+                style={{ borderColor: '#E3C08C', backgroundColor: '#F8EDD6' + '14', color: '#F8EDD6' }}
+                value={centimetros}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/\D/g, '').slice(0, 2);
+                  setCentimetros(v);
+                }}
+                title="Ingrese solo números positivos"
+                required
+              />
+              <div className="mt-2">
+                <button
+                  type="button"
+                  className="px-3 py-1 text-sm rounded-full shadow btn-sheen"
+                  style={{ backgroundColor: '#B78456', color: '#452216' }}
+                  onClick={openPreview}
                 >
-                  <option value="" disabled style={{ color: '#452216' }}>Selecciona hora (PM)</option>
-                  {['16:30','16:45','17:00','17:15','17:30','17:45','18:00','18:15','18:30','18:45','19:00','19:15','19:30'].map(t => (
-                    <option key={t} value={t} style={{ color: '#452216' }}>{t}</option>
-                  ))}
-                </select>
+                  ver cm de la torta
+                </button>
               </div>
             </div>
-            <p className="mt-1 text-xs" style={{ color: '#EED3A1' }}>Horario permitido: Lunes a viernes, de 4:30 pm a 7:30 pm (solo PM). Feriados excluidos.</p>
-          </div>
 
-          {/* A nombre de */}
-          <div className="group">
-            <label htmlFor="aNombreDe" className="block text-sm font-semibold tracking-wide" style={{ color: '#F8EDD6' }}>
-              A nombre de quién es el pedido
-            </label>
-            <div className="h-[2px] w-24 rounded-full mb-2" style={{ backgroundColor: '#E3C08C' }}></div>
-            <input
-              id="aNombreDe"
-              type="text"
-              maxLength={35}
-              className="w-full p-3 rounded-lg border focus:outline-none focus:ring-2"
-              style={{ borderColor: '#E3C08C', backgroundColor: '#F8EDD6' + '14', color: '#F8EDD6' }}
-              value={aNombreDe}
-              onChange={handleANombreDeChange}
-              pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñÜü' \-]{2,}$"
-              title="Hasta 35 caracteres. Solo letras, espacios, apóstrofes y guiones"
-              required
-            />
-          </div>
-
-          {/* Centímetros */}
-          <div className="group">
-            <label htmlFor="centimetros" className="block text-sm font-semibold tracking-wide" style={{ color: '#F8EDD6' }}>
-              Centímetros de la torta
-            </label>
-            <div className="h-[2px] w-24 rounded-full mb-2" style={{ backgroundColor: '#E3C08C' }}></div>
-            <input
-              id="centimetros"
-              type="number"
-              min="1"
-              max="99"
-              className="w-full p-3 rounded-lg border focus:outline-none focus:ring-2"
-              style={{ borderColor: '#E3C08C', backgroundColor: '#F8EDD6' + '14', color: '#F8EDD6' }}
-              value={centimetros}
-              onChange={(e) => {
-                const v = e.target.value.replace(/\D/g, '').slice(0, 2);
-                setCentimetros(v);
-              }}
-              title="Ingrese solo números positivos"
-              required
-            />
-            <div className="mt-2">
-              <button
-                type="button"
-                className="px-3 py-1 text-sm rounded-full shadow btn-sheen"
-                style={{ backgroundColor: '#B78456', color: '#452216' }}
-                onClick={openPreview}
-              >
-                ver cm de la torta
-              </button>
+            {/* Cantidad de torta */}
+            <div className="group">
+              <label htmlFor="cantidadTorta" className="block text-sm font-semibold tracking-wide" style={{ color: '#F8EDD6' }}>
+                Cantidad de torta
+              </label>
+              <div className="h-[2px] w-24 rounded-full mb-2" style={{ backgroundColor: '#E3C08C' }}></div>
+              <input
+                id="cantidadTorta"
+                type="number"
+                min="1"
+                max="99"
+                className="w-full p-3 rounded-lg border focus:outline-none focus:ring-2"
+                style={{ borderColor: '#E3C08C', backgroundColor: '#F8EDD6' + '14', color: '#F8EDD6' }}
+                value={cantidadTorta}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/\D/g, '').slice(0, 2);
+                  setCantidadTorta(v);
+                }}
+                title="Ingrese cantidad (mínimo 1)"
+                required
+              />
             </div>
-          </div>
 
-          {/* Cantidad de torta */}
-          <div className="group">
-            <label htmlFor="cantidadTorta" className="block text-sm font-semibold tracking-wide" style={{ color: '#F8EDD6' }}>
-              Cantidad de torta
+            {/* Campo adicional */}
+            <div className="group">
+              <label htmlFor="campoExtra" className="block text-sm font-semibold tracking-wide" style={{ color: '#F8EDD6' }}>
+                Notas del pedido
+              </label>
+              <div className="h-[2px] w-20 rounded-full mb-2" style={{ backgroundColor: '#E3C08C' }}></div>
+              <input
+                id="campoExtra"
+                type="text"
+                className="w-full p-3 rounded-lg border focus:outline-none focus:ring-2"
+                style={{ borderColor: '#E3C08C', backgroundColor: '#F8EDD6' + '14', color: '#F8EDD6' }}
+                value={campoExtra}
+                onChange={handleCampoExtraChange}
+                minLength={3}
+                title="Describe detalles adicionales (mínimo 3 caracteres)"
+                required
+              />
+            </div>
+
+            <label className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                checked={pickupAck}
+                onChange={(e) => {
+                  setPickupAck(e.target.checked);
+                  e.target.setCustomValidity(e.target.checked ? '' : 'Debes seleccionar esta casilla para continuar');
+                }}
+                required
+              />
+              <span style={{ color: '#EED3A1' }}>Reconozco que debo retirar la torta en el local</span>
             </label>
-            <div className="h-[2px] w-24 rounded-full mb-2" style={{ backgroundColor: '#E3C08C' }}></div>
-            <input
-              id="cantidadTorta"
-              type="number"
-              min="1"
-              max="99"
-              className="w-full p-3 rounded-lg border focus:outline-none focus:ring-2"
-              style={{ borderColor: '#E3C08C', backgroundColor: '#F8EDD6' + '14', color: '#F8EDD6' }}
-              value={cantidadTorta}
-              onChange={(e) => {
-                const v = e.target.value.replace(/\D/g, '').slice(0, 2);
-                setCantidadTorta(v);
-              }}
-              title="Ingrese cantidad (mínimo 1)"
-              required
-            />
-          </div>
 
-          {/* Campo adicional */}
-          <div className="group">
-            <label htmlFor="campoExtra" className="block text-sm font-semibold tracking-wide" style={{ color: '#F8EDD6' }}>
-              Notas del pedido
+            <label className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                checked={depositAck}
+                onChange={(e) => {
+                  setDepositAck(e.target.checked);
+                  e.target.setCustomValidity(e.target.checked ? '' : 'Debes seleccionar esta casilla para continuar');
+                }}
+                required
+              />
+              <span style={{ color: '#EED3A1' }}>Reconozco realizar abono del pedido</span>
             </label>
-            <div className="h-[2px] w-20 rounded-full mb-2" style={{ backgroundColor: '#E3C08C' }}></div>
-            <input
-              id="campoExtra"
-              type="text"
-              className="w-full p-3 rounded-lg border focus:outline-none focus:ring-2"
-              style={{ borderColor: '#E3C08C', backgroundColor: '#F8EDD6' + '14', color: '#F8EDD6' }}
-              value={campoExtra}
-              onChange={handleCampoExtraChange}
-              minLength={3}
-              title="Describe detalles adicionales (mínimo 3 caracteres)"
-              required
-            />
-          </div>
 
-          <label className="flex items-center gap-3">
-            <input
-              type="checkbox"
-              checked={pickupAck}
-              onChange={(e) => {
-                setPickupAck(e.target.checked);
-                e.target.setCustomValidity(e.target.checked ? '' : 'Debes seleccionar esta casilla para continuar');
-              }}
-              required
-            />
-            <span style={{ color: '#EED3A1' }}>Reconozco que debo retirar la torta en el local</span>
-          </label>
-
-          <label className="flex items-center gap-3">
-            <input
-              type="checkbox"
-              checked={depositAck}
-              onChange={(e) => {
-                setDepositAck(e.target.checked);
-                e.target.setCustomValidity(e.target.checked ? '' : 'Debes seleccionar esta casilla para continuar');
-              }}
-              required
-            />
-            <span style={{ color: '#EED3A1' }}>Reconozco realizar abono del pedido</span>
-          </label>
-
-          <div className="flex gap-4 mt-2">
-            <button type="button" onClick={() => setStep(1)} className="px-6 py-3 rounded-full font-semibold shadow-md btn-sheen" style={{ backgroundColor: '#B78456', color: '#452216' }}>Volver</button>
-            <button type="submit" className="flex-1 px-6 py-3 rounded-full font-semibold shadow-lg btn-sheen focus:outline-none" style={{ backgroundImage: 'linear-gradient(90deg, #D7A46B 0%, #B78456 100%)', color: '#452216', border: '2px solid #E3C08C' }}>Enviar pedido</button>
-          </div>
-        </form>
+            <div className="flex justify-center mt-4">
+              <button type="submit" className="px-8 py-3 rounded-full font-semibold shadow-lg btn-sheen focus:outline-none w-[260px] sm:w-[340px] md:w-[420px]" style={{ backgroundImage: 'linear-gradient(90deg, #D7A46B 0%, #B78456 100%)', color: '#452216', border: '2px solid #E3C08C' }}>Enviar pedido</button>
+            </div>
+            </div>
+          </form>
+        </div>
       )}
 
       {/* Modal de vista previa de imagen (paso 2) */}
