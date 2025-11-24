@@ -91,6 +91,9 @@ export default function PaginaBienvenida({ onContinue }) {
     return () => clearInterval(id);
   }, []);
 
+  const [copiedEmail, setCopiedEmail] = useState(false);
+  const [copiedPhase, setCopiedPhase] = useState('in');
+
   // Al refrescar en esta página, llevar siempre al tope
   useEffect(() => {
     let prev = null;
@@ -464,8 +467,8 @@ export default function PaginaBienvenida({ onContinue }) {
           </p>
         </div>
 
-        {/* Contactos */}
-        <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-5 max-w-5xl w-full mx-auto">
+        {/* Contactos como íconos circulares flotantes */}
+        <div className="mt-2 flex flex-wrap sm:flex-nowrap justify-center items-center gap-0 max-w-5xl w-full mx-auto">
           {/* WhatsApp */}
           <a
             href="https://wa.me/56933517967"
@@ -473,16 +476,17 @@ export default function PaginaBienvenida({ onContinue }) {
             rel="noopener noreferrer"
             aria-label="WhatsApp"
             title="Contactar por WhatsApp"
-          className="group block card-elegant p-5 reveal-card-elegant"
-          data-reveal
+            className="group flex flex-col items-center justify-center mx-1"
           >
-            <div className="flex items-center gap-4 justify-center sm:justify-start">
-              <div className="text-4xl leading-none text-amber-700 group-hover:text-green-600 transition-colors">📱</div>
-              <div className="text-center sm:text-left">
-                <div className="text-lg font-semibold text-amber-900">WhatsApp</div>
-                <div className="text-sm text-neutral-600">+56933517967</div>
+            <div className="contact-circle float-card hover-jump">
+              <div className="contact-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" className="w-12 h-12" fill="none">
+                  <rect x="7" y="5" width="10" height="14" rx="2" stroke="#783719" strokeWidth="2" />
+                  <line x1="10" y1="7" x2="14" y2="7" stroke="#783719" strokeWidth="1.6" strokeLinecap="round" />
+                </svg>
               </div>
             </div>
+            <div className="mt-3 text-sm font-semibold text-amber-900">WhatsApp</div>
           </a>
 
           {/* Instagram */}
@@ -492,45 +496,55 @@ export default function PaginaBienvenida({ onContinue }) {
             rel="noopener noreferrer"
             aria-label="Instagram"
             title="Ver en Instagram"
-          className="group block card-elegant p-5 reveal-card-elegant"
-          data-reveal
+            className="group flex flex-col items-center justify-center mx-1"
           >
-            <div className="flex items-center gap-4 justify-center sm:justify-start">
-              <div className="text-4xl leading-none text-amber-700 group-hover:text-pink-600 transition-colors">📸</div>
-              <div className="text-center sm:text-left">
-                <div className="text-lg font-semibold text-amber-900">Instagram</div>
-                <div className="text-sm text-neutral-600">@opera.pasteleria</div>
+            <div className="contact-circle float-card hover-jump">
+              <div className="contact-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" className="w-12 h-12" fill="none">
+                  <rect x="4" y="4" width="16" height="16" rx="4" stroke="#783719" strokeWidth="2" />
+                  <circle cx="12" cy="12" r="4" stroke="#783719" strokeWidth="2" />
+                  <circle cx="17.5" cy="6.5" r="1.5" fill="#783719" />
+                </svg>
               </div>
             </div>
+            <div className="mt-3 text-sm font-semibold text-amber-900">Instagram</div>
           </a>
 
-          {/* Correo: no clickeable, con copia y animación sutil */}
-          <div
-            aria-label="Correo Electrónico"
+          {/* Correo */}
+          <button
+            type="button"
+            aria-label="Copiar correo"
             title="Copiar correo"
-          className="group block card-elegant p-5 reveal-card-elegant"
-          data-reveal
-          >
-            <div className="flex items-center gap-4 justify-center sm:justify-start">
-              <div className="text-4xl leading-none text-amber-700 group-hover:text-neutral-700 transition-colors">✉️</div>
-              <div className="text-center sm:text-left">
-                <div className="text-lg font-semibold text-amber-900">Correo</div>
-                <div className="text-sm text-neutral-700 break-words select-all">operalaserena@gmail.com</div>
-                <button
-                  type="button"
-                  onClick={async () => {
-                    try {
-                      await navigator.clipboard.writeText('constanza.zurita12@gmail.com');
-                    } catch {}
-                  }}
-                  className="mt-3 mx-auto sm:mx-0 inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg btn-hover-elegant btn-floating-elegant-783719 transition-all duration-500 shadow-md hover:shadow-lg transform hover:-translate-y-1 active:scale-95"
-                >
-                  <span>Copiar</span>
-                </button>
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText('operalaserena@gmail.com');
+                setCopiedPhase('in');
+                setCopiedEmail(true);
+                setTimeout(() => {
+                  setCopiedPhase('out');
+                  setTimeout(() => setCopiedEmail(false), 450);
+                }, 2000);
+              } catch {}
+            }}
+            className="group flex flex-col items-center justify-center mx-1"
+        >
+            <div className="contact-circle float-card hover-jump">
+              <div className="contact-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" className="w-12 h-12" fill="none">
+                  <rect x="4" y="6" width="16" height="12" rx="2" stroke="#783719" strokeWidth="2" />
+                  <path d="M5 8l7 5 7-5" stroke="#783719" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
               </div>
             </div>
-          </div>
+            <div className="mt-3 text-sm font-semibold text-amber-900">Correo</div>
+          </button>
         </div>
+        {copiedEmail && (
+          <div className={`copy-toast copy-toast-fixed ${copiedPhase === 'in' ? 'fade-in' : 'fade-out-down'}`} role="status" aria-live="polite">
+            <span>✓</span>
+            <span className="text-xs font-semibold">Mensaje copiado</span>
+          </div>
+        )}
       </section>
       <footer ref={secciones.pie} className={`relative overflow-hidden bg-[#783719]/80 text-[#F8EDD6] py-4 sm:py-6 mt-0 text-center font-mono tracking-wide shadow-inner transition-all duration-700 backdrop-blur-sm footer-elegant ${seccionesVisibles.pie ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}>
         {/* Fade superior sutil */}

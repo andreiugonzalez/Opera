@@ -108,6 +108,12 @@ main, div, section {
   0% { opacity: 0; transform: scale(0.985); }
   100% { opacity: 1; transform: scale(1); }
 }
+/* Salida suave hacia abajo */
+.fade-out-down { animation: fadeOutDown 420ms ease-in forwards; }
+@keyframes fadeOutDown {
+  0% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, 12px); }
+}
 
 /* Respeto por usuarios con motion reducido */
 @media (prefers-reduced-motion: reduce) {
@@ -804,6 +810,64 @@ main, div, section {
 .btn-floating-452216.btn-sheen {
   /* usa el brillo definido en .btn-sheen sin perder color base */
   background-blend-mode: overlay;
+}
+
+/* Íconos circulares de contacto */
+.contact-circle {
+  width: 88px;
+  height: 88px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  background: linear-gradient(180deg, #F8EDD6 0%, #EED3A1 100%);
+  border: 2px solid #E3C08C;
+  box-shadow: 0 10px 18px rgba(69,34,22,0.18);
+  transition: transform 200ms ease, box-shadow 200ms ease, filter 200ms ease;
+}
+.contact-circle img { border-radius: 9999px; background-color: #ffffff; }
+.contact-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 9999px;
+  background-color: #ffffff;
+  border: 2px solid #E3C08C;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.contact-circle:hover { box-shadow: 0 14px 24px rgba(69,34,22,0.24); filter: brightness(1.03); }
+
+/* Salto breve en hover; al salir vuelve a flotar */
+.hover-jump:hover { animation: jumpOnce 650ms ease-out; }
+@keyframes jumpOnce {
+  0% { transform: translateY(0); }
+  40% { transform: translateY(-10px); }
+  80% { transform: translateY(3px); }
+  100% { transform: translateY(0); }
+}
+
+.copy-toast {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  background-image: linear-gradient(90deg, #EBC07A 0%, #D89B4F 100%);
+  color: #452216;
+  border: 2px solid #E3C08C;
+  box-shadow: 0 8px 16px rgba(69,34,22,0.18);
+}
+.copy-toast-fixed {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 1000;
+  pointer-events: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
